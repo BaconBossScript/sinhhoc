@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcard Sinh học 12 – CKI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7f2;
+  --card:#ffffff;
+  --border:#dde8d4;
+  --text:#1a2a14;
+  --muted:#5a7050;
+  --green:#1e6e32;
+  --green-light:#e8f5e9;
+  --green-mid:#a5d6a7;
+  --red:#b52b2b;
+  --red-light:#fce8e8;
+  --blue:#1565c0;
+  --blue-light:#e3f2fd;
+  --amber:#7a5500;
+  --amber-light:#fff8e1;
+  --purple:#512da8;
+  --purple-light:#ede7f6;
+  --radius:10px;
+  --radius-lg:14px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
+h2.sr{position:absolute;left:-9999px}
+.container{max-width:740px;margin:0 auto}
+
+/* HEADER */
+.header{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:14px}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.title-block h1{font-size:16px;font-weight:600;color:var(--text);margin-bottom:3px}
+.title-block p{font-size:12px;color:var(--muted)}
+.stats{display:flex;gap:14px;align-items:center;flex-shrink:0}
+.stat{text-align:center;min-width:38px}
+.stat-n{font-size:20px;font-weight:700;line-height:1}
+.stat-n.blue{color:var(--blue)}
+.stat-n.green{color:var(--green)}
+.stat-n.red{color:var(--red)}
+.stat-l{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+
+/* TABS row 1: Bài */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tab{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-weight:500;transition:all .15s}
+.tab:hover{background:#f0f5ec}
+.tab.active{background:var(--green);border-color:var(--green);color:#fff}
+
+/* TYPE tabs */
+.type-row{display:flex;gap:6px;margin-bottom:12px}
+.ttab{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-weight:500;transition:all .15s}
+.ttab:hover{background:#f0f5ec}
+.ttab.active-mc{background:var(--blue);border-color:var(--blue);color:#fff}
+.ttab.active-tf{background:var(--amber);border-color:var(--amber);color:#fff}
+.ttab.active-sa{background:var(--purple);border-color:var(--purple);color:#fff}
+.ttab.active-all{background:#2e2e2e;border-color:#2e2e2e;color:#fff}
+
+/* PROGRESS */
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;height:7px;background:#dde8d4;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .4s ease;background:var(--green)}
+.prog-label{font-size:12px;color:var(--muted);min-width:50px;text-align:right}
+
+/* QUESTION CARD */
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:14px;min-height:240px}
+.qcard-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.badge-mc{background:var(--blue-light);color:var(--blue)}
+.badge-tf{background:var(--amber-light);color:var(--amber)}
+.badge-sa{background:var(--purple-light);color:var(--purple)}
+.badge-bai{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--green-light);color:var(--green);font-weight:500}
+.qnum{margin-left:auto;font-size:12px;color:var(--muted)}
+
+.qtext{font-size:14.5px;font-weight:500;line-height:1.7;color:var(--text);margin-bottom:18px}
+.qtext .note{font-size:12px;font-weight:400;color:var(--muted);display:block;margin-top:6px;font-style:italic}
+
+/* MC OPTIONS */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{background:#f8fbf5;border:1px solid var(--border);border-radius:var(--radius);padding:11px 15px;font-size:13.5px;color:var(--text);cursor:pointer;text-align:left;line-height:1.5;transition:border-color .12s,background .12s;display:flex;gap:10px;align-items:flex-start}
+.opt-key{font-weight:700;color:var(--muted);flex-shrink:0;font-size:13px;min-width:18px}
+.opt:hover:not(:disabled){background:#eef5ea;border-color:#aac}
+.opt.correct{background:var(--green-light);border-color:#4caf50;color:var(--green)}
+.opt.correct .opt-key{color:var(--green)}
+.opt.wrong{background:var(--red-light);border-color:#e57373;color:var(--red)}
+.opt.wrong .opt-key{color:var(--red)}
+.opt:disabled{cursor:default}
+
+/* TRUE/FALSE OPTIONS */
+.tf-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tf-item{background:#f8fbf5;border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.tf-stmt{font-size:13px;line-height:1.6;color:var(--text);margin-bottom:10px}
+.tf-stmt strong{color:var(--muted);margin-right:4px}
+.tf-btns{display:flex;gap:8px}
+.tf-btn{flex:1;padding:7px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s}
+.tf-btn.t-btn:hover:not(:disabled){background:#e8f5e9;border-color:#4caf50;color:var(--green)}
+.tf-btn.f-btn:hover:not(:disabled){background:var(--red-light);border-color:#e57373;color:var(--red)}
+.tf-btn.selected-t{background:var(--green-light);border-color:#4caf50;color:var(--green)}
+.tf-btn.selected-f{background:var(--red-light);border-color:#e57373;color:var(--red)}
+.tf-btn.reveal-t{background:var(--green-light);border-color:#4caf50;color:var(--green)}
+.tf-btn.reveal-f{background:var(--red-light);border-color:#e57373;color:var(--red)}
+.tf-btn:disabled{cursor:default;opacity:.75}
+.tf-result-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.tf-check{font-size:13px;font-weight:600}
+.tf-check.ok{color:var(--green)}
+.tf-check.no{color:var(--red)}
+.tf-note{font-size:11.5px;color:var(--muted);flex:1}
+
+/* SHORT ANSWER */
+.sa-input-wrap{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.sa-input{flex:1;padding:10px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius);background:#f8fbf5;color:var(--text);resize:vertical;min-height:60px;font-family:inherit}
+.sa-input:focus{outline:none;border-color:#aac;background:#fff}
+.sa-submit{padding:10px 18px;border-radius:var(--radius);background:var(--green);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.sa-submit:hover{background:#155628}
+.sa-answer{background:var(--green-light);border-left:3px solid var(--green);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;font-size:13px;line-height:1.65;color:#0d3d1e;margin-top:6px}
+.sa-answer strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--green)}
+
+/* EXPLANATION */
+.explain{margin-top:12px;font-size:13px;line-height:1.65;padding:12px 16px;background:var(--blue-light);border-left:3px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;color:#0d2060}
+
+/* NAV */
+.nav{display:flex;gap:8px;align-items:center}
+.btn{padding:9px 20px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);color:var(--text);cursor:pointer;font-weight:500;transition:all .12s}
+.btn:hover{background:#eef5ea;border-color:#aac}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:#155628}
+.nav-spacer{flex:1}
+
+/* SCORE */
+.score-circle{width:100px;height:100px;border-radius:50%;background:var(--green-light);border:3px solid var(--green-mid);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;flex-direction:column}
+</style>
+</head>
+<body>
+<h2 class="sr">Flashcard Sinh học 12 – Bài 15 đến Bài 28</h2>
+<div class="container">
+
+<div class="header">
+  <div class="header-top">
+    <div class="title-block">
+      <h1>Sinh học 12 – Ôn tập CK2</h1>
+      <p id="subtitle">Chọn bài và loại câu hỏi để bắt đầu</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n blue" id="s-total">0</div><div class="stat-l">câu</div></div>
+      <div class="stat"><div class="stat-n green" id="s-correct">0</div><div class="stat-l">đúng</div></div>
+      <div class="stat"><div class="stat-n red" id="s-wrong">0</div><div class="stat-l">sai</div></div>
+    </div>
+  </div>
+  <div class="tab-row" id="bai-tabs">
+    <button class="tab" onclick="setBai('15')">B15</button>
+    <button class="tab" onclick="setBai('16')">B16</button>
+    <button class="tab" onclick="setBai('17')">B17</button>
+    <button class="tab" onclick="setBai('18')">B18</button>
+    <button class="tab" onclick="setBai('19')">B19</button>
+    <button class="tab" onclick="setBai('20')">B20</button>
+    <button class="tab" onclick="setBai('21')">B21</button>
+    <button class="tab" onclick="setBai('22')">B22</button>
+    <button class="tab" onclick="setBai('23')">B23</button>
+    <button class="tab" onclick="setBai('24')">B24</button>
+    <button class="tab" onclick="setBai('25')">B25</button>
+    <button class="tab" onclick="setBai('26')">B26</button>
+    <button class="tab" onclick="setBai('27')">B27</button>
+    <button class="tab" onclick="setBai('28')">B28</button>
+    <button class="tab active" onclick="setBai('ALL')">Tất cả</button>
+  </div>
+  <div class="type-row" id="type-tabs">
+    <button class="ttab active-mc" onclick="setType('MC')">Trắc nghiệm</button>
+    <button class="ttab" onclick="setType('TF')">Đúng / Sai</button>
+    <button class="ttab" onclick="setType('SA')">Trả lời ngắn</button>
+    <button class="ttab active-all" onclick="setType('ALL')">Tất cả</button>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-label" id="prog-label">0 / 0</div>
+  </div>
+</div>
+
+<div id="qcard" class="qcard">
+  <div class="qcard-meta">
+    <span class="badge badge-mc" id="b-type">MC</span>
+    <span class="badge badge-bai" id="b-bai">–</span>
+    <span class="qnum" id="b-num">–</span>
+  </div>
+  <div class="qtext" id="qtext">Nhấn chọn bài và loại câu hỏi để bắt đầu ôn tập.</div>
+  <div id="q-body"></div>
+  <div class="explain" id="explain" style="display:none"></div>
+</div>
+
+<div class="nav" id="nav">
+  <button class="btn" id="btn-prev" onclick="go(-1)" style="display:none">← Trước</button>
+  <button class="btn" id="btn-skip" onclick="skipQ()">Bỏ qua</button>
+  <div class="nav-spacer"></div>
+  <span style="font-size:12px;color:var(--muted)" id="nav-info"></span>
+  <button class="btn primary" id="btn-next" onclick="go(1)" style="display:none">Tiếp →</button>
+</div>
+
+</div>
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const MC = [
+// ─── BÀI 15 ───
+{b:'15',q:'Có bao nhiêu bằng chứng nói về hai cơ quan tương đồng?\na. Gai cây xương rồng và tua cuốn đậu hà lan\nb. Mang cá và mang cua\nc. Chân chuột chũi và chi dế trũi\nd. Gai hoa hồng và gai xương rồng',o:['1','2','3','4'],a:1,e:'Cơ quan tương đồng: a (gai và tua cuốn đều từ lá biến đổi) và c (chân/chi có cùng nguồn gốc, chức năng khác). Mang cá và mang cua là tương tự (nguồn gốc khác). Gai hoa hồng là biến đổi từ biểu bì, gai xương rồng từ lá.'},
+{b:'15',q:'Có bao nhiêu ví dụ đúng về cơ quan tương đồng (cùng nguồn gốc phôi)?\na. Cánh chim én và cánh chuồn chuồn\nb. Tay người và chi trước cá voi\nc. Tuyến nước bọt người và tuyến nọc độc rắn\nd. Ruột thừa người và manh tràng động vật ăn cỏ',o:['1','2','3','4'],a:2,e:'Tương đồng có cùng nguồn gốc phôi: b (tay người – vây cá voi), c (tuyến nước bọt – tuyến nọc độc), d (ruột thừa – manh tràng). Cánh chim và cánh chuồn chuồn là tương tự (nguồn gốc khác).'},
+// ─── BÀI 16 ───
+{b:'16',q:'Người đầu tiên đưa ra khái niệm biến dị cá thể là',o:['Lamarck','Mendel','Morgan','Darwin'],a:3,e:'Darwin đưa ra khái niệm biến dị cá thể – sự sai khác giữa các cá thể trong loài.'},
+{b:'16',q:'Theo Darwin, nguyên liệu chủ yếu cho chọn lọc tự nhiên là',o:['Thường biến','Biến dị tổ hợp','Đột biến','Biến dị cá thể'],a:3,e:'Darwin gọi sự sai khác ngẫu nhiên giữa các cá thể là biến dị cá thể – đây là nguyên liệu chủ yếu cho CLTN.'},
+{b:'16',q:'Theo Darwin, nhân tố chính quy định chiều hướng và tốc độ biến đổi các giống vật nuôi cây trồng là',o:['Chọn lọc nhân tạo','Chọn lọc tự nhiên','Biến dị cá thể','Biến dị xác định'],a:0,e:'Chọn lọc nhân tạo do con người thực hiện quy định chiều hướng và tốc độ biến đổi các giống vật nuôi, cây trồng.'},
+{b:'16',q:'Các bước trong phương pháp nghiên cứu của Darwin là',o:['Học thuyết → Quan sát → Kiểm chứng','Hình thành giả thuyết → Kiểm chứng → Quan sát','Hình thành giả thuyết → Quan sát → Kiểm chứng','Quan sát → Hình thành giả thuyết → Kiểm chứng'],a:3,e:'Phương pháp khoa học chuẩn: Quan sát → Hình thành giả thuyết → Kiểm chứng.'},
+{b:'16',q:'Theo Darwin, động lực thúc đẩy chọn lọc tự nhiên là',o:['Sự cạnh tranh giữa các sinh vật (đấu tranh sinh tồn)','Đột biến – nguồn nguyên liệu chủ yếu','Thường biến – biến đổi do môi trường','Biến dị tổ hợp – nguyên liệu chủ yếu trong quần thể'],a:0,e:'Darwin: đấu tranh sinh tồn (cạnh tranh gay gắt trong tự nhiên) là động lực thúc đẩy CLTN.'},
+{b:'16',q:'Khi nói về học thuyết tiến hóa Darwin, có bao nhiêu phát biểu đúng trong 5 phát biểu:\nI. Tiến hóa nhờ cơ chế di truyền và biến dị\nII. Sinh vật tiến hóa do CLTN thường xuyên tác động\nIII. Thành công: đưa ra khái niệm biến dị, di truyền, CLTN\nIV. Thành công giải thích nguyên nhân phát sinh và cơ chế di truyền biến dị\nV. Thành công giải thích sự hình thành đặc điểm thích nghi',o:['1','2','3','4'],a:2,e:'Đúng: II, III, V (3 phát biểu). Darwin chưa giải thích được nguyên nhân phát sinh và cơ chế di truyền biến dị (IV sai). Tiến hóa nhờ CLTN chứ không phải nhờ cơ chế di truyền-biến dị theo nghĩa hiện đại (I sai theo ngữ cảnh).'},
+// ─── BÀI 17 ───
+{b:'17',q:'Theo thuyết tiến hóa tổng hợp, tiến hóa nhỏ là quá trình',o:['Hình thành các nhóm phân loại trên loài','Duy trì ổn định thành phần kiểu gene của quần thể','Biến đổi thành phần kiểu gene của quần thể dẫn đến hình thành loài mới','Củng cố ngẫu nhiên những allele trung tính trong quần thể'],a:2,e:'Tiến hóa nhỏ là quá trình biến đổi thành phần kiểu gene của quần thể dẫn đến sự hình thành loài mới.'},
+{b:'17',q:'Sự thay đổi đột ngột trong môi trường (hỏa hoạn, lũ lụt) làm giảm mạnh kích thước quần thể có thể dẫn đến',o:['Hiệu ứng thắt cổ chai','Hiệu ứng sáng lập','Dòng gene','Đột biến'],a:0,e:'Giảm đột ngột kích thước quần thể do tai biến môi trường = hiệu ứng thắt cổ chai (bottle neck effect).'},
+{b:'17',q:'Khi nói về dòng gene, phát biểu nào đúng?',o:['Luôn làm nghèo vốn gene của quần thể','Cá thể nhập cư có thể mang allele mới làm phong phú vốn gene','Nhập cư bằng xuất cư thì chắc chắn không thay đổi tần số kiểu gene','Xuất cư chỉ làm thay đổi tần số allele mà không thay đổi kiểu gene'],a:1,e:'Cá thể nhập cư mang allele mới vào quần thể → làm phong phú vốn gene. A sai (nhập cư làm phong phú). C sai (thay đổi kiểu gene cũng có thể). D sai (xuất cư thay đổi cả hai).'},
+{b:'17',q:'Sự thích nghi của một sinh vật là',o:['Sự thay đổi hình thái, giải phẫu, sinh lý phù hợp với điều kiện sống','Sự biến đổi kiểu gene phù hợp với điều kiện sống','Khả năng có một kiểu gene phù hợp với mọi điều kiện sống','Khả năng chỉ biến đổi hình thái phù hợp với điều kiện sống'],a:0,e:'Thích nghi là sự thay đổi hình thái, giải phẫu, sinh lý,... phù hợp với điều kiện sống, giúp sinh vật tồn tại và phát triển.'},
+{b:'17',q:'Nhân tố nào làm thay đổi tần số allele và thành phần kiểu gene theo một hướng xác định?',o:['Chọn lọc tự nhiên','Giao phối không ngẫu nhiên','Dòng gene','Đột biến'],a:0,e:'CLTN làm thay đổi tần số allele theo hướng xác định (tích lũy allele có lợi, đào thải allele có hại).'},
+{b:'17',q:'CLTN diễn ra quy mô lớn, thời gian lịch sử lâu dài sẽ dẫn đến',o:['Hình thành các đơn vị phân loại trên loài (chi, họ, bộ, lớp, ngành)','Đào thải các biến dị con người không ưa thích','Tích lũy biến dị đáp ứng nhu cầu của loài người','Hình thành loài mới xếp cùng một chi'],a:0,e:'CLTN trên quy mô lớn, thời gian dài → tiến hóa lớn → hình thành các đơn vị phân loại trên loài (chi, họ, bộ...).'},
+{b:'17',q:'Những đặc điểm sinh học ngăn cản các cá thể không giao phối hoặc giao phối không sinh đời con hữu thụ được gọi là',o:['Cách li địa lí','Cách li sinh thái','Cách li sinh sản','Cách li tập tính'],a:2,e:'Cách li sinh sản là các đặc điểm sinh học ngăn cản giao phối hoặc làm con lai bất thụ.'},
+{b:'17',q:'Ba yếu tố quan trọng nhất hình thành đặc điểm thích nghi của quần thể sinh vật là',o:['Đột biến, giao phối và CLTN','Đột biến, CLTN và chọn lọc nhân tạo','Chọn lọc, giao phối và phát tán','Đột biến, phát tán và chọn lọc ngẫu nhiên'],a:0,e:'Ba yếu tố quan trọng nhất: đột biến (tạo nguyên liệu), giao phối (phát tán và tổ hợp), CLTN (định hướng).'},
+{b:'17',q:'Nội dung nào KHÔNG giải thích cho đặc điểm thích nghi chỉ hợp lý tương đối?',o:['Mỗi đặc điểm thích nghi là sản phẩm CLTN trong hoàn cảnh nhất định','Khi điều kiện môi trường thay đổi thì đặc điểm thích nghi cũ bất lợi','Ngay trong hoàn cảnh ổn định, biến dị vẫn phát sinh cải thiện không ngừng','CLTN không thể đào thải hoàn toàn allele lặn có hại'],a:2,e:'C (biến dị vẫn phát sinh liên tục) không giải thích tính tương đối mà là lý do thích nghi luôn được hoàn thiện. A, B, D đều giải thích tính hợp lý tương đối.'},
+{b:'17',q:'Phát biểu đúng nhất về vai trò cách li địa lí trong hình thành loài?',o:['Không có cách li địa lí thì không thể hình thành loài mới','Cách li địa lí có thể dẫn đến hình thành loài mới qua nhiều giai đoạn trung gian','Cách li địa lí luôn dẫn đến cách li sinh sản','Môi trường địa lí khác nhau là nguyên nhân chính phân hóa kiểu gen'],a:1,e:'Cách li địa lí có thể dẫn đến hình thành loài mới qua nhiều giai đoạn trung gian (KHÔNG bắt buộc và không luôn dẫn đến cách li sinh sản).'},
+{b:'17',q:'Loài Raphanus brassica (2n=36) hình thành từ lai Raphanus sativus (2n=18) × Brassica oleraceae (2n=18). Kết luận đúng là',o:['Đây là hình thành loài bằng con đường địa lí','Quá trình hình thành loài diễn ra trong thời gian tương đối ngắn','Khi mới hình thành, loài mới không sống cùng môi trường loài cũ','Đây là phương thức phổ biến ở động vật'],a:1,e:'Hình thành loài bằng đa bội hóa (lai xa + đa bội) diễn ra trong thời gian tương đối ngắn. Đây là phổ biến ở thực vật, loài mới sống cùng môi trường loài gốc.'},
+{b:'17',q:'Nhận định đúng về CLTN: 1) CLTN tạo ra cá thể thích nghi; 2) Chọn lọc chống allele trội nhanh hơn allele lặn; 3) CLTN không phụ thuộc kích thước quần thể; 4) CLTN có thể đào thải hoàn toàn allele lặn. Nhận định đúng là:',o:['(2), (4)','(3), (4)','(2), (3)','(1), (3)'],a:2,e:'Đúng: (2) chọn lọc chống allele trội nhanh hơn (vì allele trội biểu hiện ngay ở dị hợp), (3) CLTN không phụ thuộc kích thước quần thể. Sai: (1) CLTN không tạo ra mà tích lũy thích nghi; (4) CLTN không đào thải hoàn toàn allele lặn vì tồn tại ở dạng dị hợp.'},
+{b:'17',q:'Phát biểu nào SAI khi nói về phiêu bạt di truyền?',o:['Không có đột biến và phiêu bạt di truyền thì không thể thay đổi thành phần kiểu gene','Khi quần thể lớn bị giảm kích thước đột ngột, cá thể sống sót có vốn gene khác quần thể ban đầu','Quần thể kích thước càng nhỏ thì các yếu tố ngẫu nhiên càng dễ làm thay đổi tần số allele','Phiêu bạt di truyền có thể dẫn đến làm nghèo vốn gene của quần thể'],a:0,e:'A SAI vì nếu không có đột biến và phiêu bạt DT thì CLTN và dòng gene vẫn có thể thay đổi thành phần kiểu gene.'},
+{b:'17',q:'Quần thể ngẫu phối: P=0,20AA+0,30Aa+0,50aa. Qua F1→F4, tần số aa giảm dần, AA tăng dần. Nhận xét đúng về tác động CLTN là',o:['CLTN loại bỏ dị hợp và đồng hợp lặn','Cá thể kiểu hình trội đang bị CLTN loại bỏ dần','CLTN loại bỏ đồng hợp, giữ dị hợp','Cá thể kiểu hình lặn đang bị CLTN loại bỏ dần'],a:3,e:'Tần số aa giảm dần qua các thế hệ → CLTN đang loại bỏ kiểu hình lặn (aa). Tần số AA tăng → cá thể kiểu hình trội được giữ lại.'},
+{b:'17',q:'Phát biểu SAI về CLTN theo thuyết tiến hóa hiện đại?',o:['CLTN tác động trực tiếp lên từng allele riêng rẽ và trực tiếp làm thay đổi tần số kiểu gene','CLTN chống lại allele trội có thể nhanh chóng làm thay đổi tần số allele','Trong quần thể ngẫu phối, CLTN chống allele lặn không bao giờ loại hết allele lặn','Khi môi trường thay đổi theo hướng xác định, CLTN làm thay đổi tần số allele theo hướng xác định'],a:0,e:'A SAI. CLTN tác động trực tiếp lên kiểu hình (không phải allele riêng rẽ) và gián tiếp làm thay đổi tần số kiểu gene.'},
+{b:'17',q:'Sâu ăn lá có màu xanh lục lẫn với màu lá, khó bị chim phát hiện. Theo sinh học hiện đại, đặc điểm thích nghi này được hình thành do',o:['Thức ăn là lá xanh trực tiếp làm biến đổi màu sắc sâu','CLTN tích lũy các đột biến màu xanh lục xuất hiện ngẫu nhiên','CLTN tích lũy các biến dị cá thể màu xanh lục qua nhiều thế hệ','Khi chuyển sang ăn lá, sâu tự biến đổi màu cơ thể'],a:1,e:'Theo thuyết tiến hóa hiện đại: đột biến ngẫu nhiên tạo màu xanh, CLTN tích lũy đột biến có lợi này qua nhiều thế hệ.'},
+{b:'17',q:'Côn trùng cánh cứng: AA=cánh dài, Aa=cánh ngắn, aa=không cánh. Quần thể lúc sinh: 0,25AA:0,6Aa:0,15aa. Khi trưởng thành, cánh dài bị gió cuốn ra biển. Thành phần kiểu gene thế hệ sau là',o:['0,3025AA:0,495Aa:0,2025aa','0,16AA:0,48Aa:0,36aa','0,2AA:0,4Aa:0,4aa','0,64AA:0,32Aa:0,04aa'],a:1,e:'Sau CLTN loại AA, còn lại 0,6Aa và 0,15aa. Tổng=0,75. Tần số: Aa=0,6/0,75=0,8; aa=0,15/0,75=0,2. Tần số allele: A=0,4; a=0,6. Thế hệ sau: 0,16AA:0,48Aa:0,36aa.'},
+{b:'17',q:'Dựa vào sơ đồ cây tiến hóa Bộ ăn thịt, đặc điểm nào phổ biến hơn ở các nhóm sinh vật hiện nay?',o:['Có màng ối','Có 4 chi','Có xương sống','Có lông mao'],a:2,e:'Đặc điểm xuất hiện sớm hơn trong cây tiến hóa sẽ phổ biến hơn vì có nhiều nhóm kế thừa. Xương sống xuất hiện trước các đặc điểm còn lại.'},
+// ─── BÀI 18 ───
+{b:'18',q:'Thực chất của tiến hóa tiền sinh học là hình thành',o:['Các chất hữu cơ từ vô cơ','Axít nuclêic và prôtêin từ các chất hữu cơ','Mầm sống đầu tiên từ các hợp chất hữu cơ','Vô cơ và hữu cơ từ các nguyên tố trên bề mặt trái đất'],a:2,e:'Tiến hóa tiền sinh học là giai đoạn hình thành các tế bào sơ khai (mầm sống đầu tiên) từ các hợp chất hữu cơ đã có.'},
+{b:'18',q:'Theo thuyết tiến hóa tổng hợp, mầm mống những cơ thể sống đầu tiên được hình thành ở',o:['Trên mặt đất','Trong không khí','Trong lòng đất','Trong nước đại dương'],a:3,e:'Mầm sống đầu tiên hình thành trong nước đại dương nguyên thủy, nơi tập trung các chất hữu cơ.'},
+{b:'18',q:'Trong điều kiện hiện nay, chất hữu cơ được hình thành chủ yếu bằng cách',o:['Tổng hợp nhờ nguồn năng lượng tự nhiên','Quang tổng hợp hoặc hóa tổng hợp','Được tổng hợp trong các tế bào sống','Tổng hợp nhờ công nghệ sinh học'],a:2,e:'Hiện nay chất hữu cơ được tổng hợp trong các tế bào sống (không còn tổng hợp từ vô cơ như thời nguyên thủy).'},
+{b:'18',q:'Quá trình tiến hóa hình thành hợp chất hữu cơ đầu tiên trên Trái Đất KHÔNG có sự tham gia của',o:['Hoạt động núi lửa, bức xạ Mặt Trời','Phóng điện trong khí quyển, tia tử ngoại','Từ tia tử ngoại, hoạt động núi lửa','Từ tia tử ngoại và năng lượng sinh học'],a:3,e:'Năng lượng sinh học không tồn tại trước khi sự sống xuất hiện nên không tham gia vào quá trình tiến hóa hóa học.'},
+{b:'18',q:'Khi nói về nguồn gốc sự sống, bao nhiêu phát biểu đúng?\nI. Trình tự: Tiến hóa hóa học → Tiến hóa sinh học → Tiến hóa tiền sinh học\nII. Tiến hóa hóa học là giai đoạn hình thành tế bào sống đầu tiên\nIII. Tiến hóa tiền sinh học là giai đoạn hình thành tế bào sơ khai\nIV. Tiến hóa sinh học diễn ra đến ngày nay và không chịu tác động nhân tố tiến hóa',o:['0','1','2','3'],a:1,e:'Chỉ III đúng (tiến hóa tiền sinh học hình thành protobiont). I sai (trình tự đúng: hóa học → tiền sinh học → sinh học). II sai (hóa học hình thành chất hữu cơ, không phải tế bào). IV sai (tiến hóa sinh học chịu tác động nhân tố tiến hóa).'},
+// ─── BÀI 19 ───
+{b:'19',q:'Thứ tự các đại trong lịch sử sự sống từ xưa đến nay là',o:['Thái cổ, Nguyên sinh, Cổ sinh, Trung sinh, Tân sinh','Nguyên sinh, Cổ sinh, Thái cổ, Trung sinh, Tân sinh','Nguyên sinh, Thái cổ, Cổ sinh, Trung sinh, Tân sinh','Thái cổ, Cổ sinh, Trung sinh, Nguyên sinh, Tân sinh'],a:0,e:'Thứ tự đúng: Thái cổ → Nguyên sinh → Cổ sinh → Trung sinh → Tân sinh.'},
+{b:'19',q:'Trong quá trình phát sinh loài người, đặc điểm nào chứng tỏ tiếng nói đã phát triển?',o:['Có lồi cằm rõ','Góc quai hàm nhỏ','Xương hàm bé','Răng nanh ít phát triển'],a:0,e:'Lồi cằm rõ là đặc điểm đặc trưng của người hiện đại Homo sapiens, liên quan đến sự phát triển tiếng nói.'},
+{b:'19',q:'Thứ tự 5 đại từ khi sinh vật bắt đầu xuất hiện đến ngày nay là',o:['1→2→3→4→5 (Tân→Trung→Thái cổ→Nguyên sinh→Cổ sinh)','5→4→3→2→1 (Cổ sinh→Nguyên sinh→Thái cổ→Trung sinh→Tân sinh)','3→4→5→2→1 (Thái cổ→Nguyên sinh→Cổ sinh→Trung sinh→Tân sinh)','4→3→5→2→1'],a:2,e:'Thứ tự: 3(Thái cổ) → 4(Nguyên sinh) → 5(Cổ sinh) → 2(Trung sinh) → 1(Tân sinh).'},
+{b:'19',q:'Cơ sở để chia lịch sử Trái Đất thành các đại, các kỉ là',o:['Thời gian hình thành và phát triển của Trái Đất','Lịch sử phát triển thế giới sinh vật qua các thời kì','Những biến đổi lớn về địa chất, khí hậu và các hóa thạch','Sự hình thành hóa thạch và khoáng sản trong lòng đất'],a:2,e:'Cơ sở phân chia: những biến đổi lớn về địa chất, khí hậu và các hóa thạch điển hình.'},
+{b:'19',q:'Loài cổ nhất và hiện đại nhất trong chi Homo là',o:['Homo erectus và Homo sapiens','Homo habilis và Homo erectus','Homo neanderthalensis và Homo sapiens','Homo habilis và Homo sapiens'],a:3,e:'Cổ nhất: Homo habilis (xuất hiện ~2,5 triệu năm trước). Hiện đại nhất: Homo sapiens (người hiện đại).'},
+{b:'19',q:'Thực vật có hoa xuất hiện ở',o:['Kỉ Phấn trắng thuộc đại Trung sinh','Kỉ Tam điệp thuộc đại Trung sinh','Kỉ Đệ tam thuộc đại Tân sinh','Kỉ Jurassic thuộc đại Trung sinh'],a:0,e:'Thực vật có hoa (Angiospermae) xuất hiện vào Kỉ Phấn trắng (Cretaceous) thuộc đại Trung sinh.'},
+{b:'19',q:'Người ta chia giai đoạn phát triển Trái Đất thành',o:['5 đại và 11 kỉ','6 đại và 11 kỉ','6 đại và 12 kỉ','5 đại và 12 kỉ'],a:3,e:'Lịch sử Trái Đất chia thành 5 đại và 12 kỉ.'},
+{b:'19',q:'Quá trình tiến hóa hình thành các loài trong chi Homo theo thứ tự đúng là',o:['H.habilis → H.erectus → H.neanderthalensis → H.sapiens','H.erectus → H.habilis → H.sapiens','H.habilis → H.neanderthalensis → H.erectus → H.sapiens','H.habilis → H.erectus → H.sapiens'],a:3,e:'Thứ tự đúng theo bằng chứng hóa thạch: H.habilis → H.erectus → H.sapiens.'},
+{b:'19',q:'Khẳng định nào sau đây KHÔNG đúng trong quá trình phát sinh Homo sapiens?',o:['Từ Homo erectus đã hình thành nên loài Homo sapiens','Người và các loài vượn người hiện nay tách nhau ra từ tổ tiên chung cách đây ~5-7 triệu năm','Homo habilis có thể tích hộp sọ lớn hơn Homo erectus và đã biết dùng lửa','Loài xuất hiện đầu tiên trong chi Homo là Homo habilis'],a:2,e:'C SAI. Homo habilis có thể tích hộp sọ NHỎ hơn Homo erectus. Homo habilis chưa biết dùng lửa (Homo erectus mới biết dùng lửa).'},
+{b:'19',q:'Đại nào trải qua 6 kỉ?',o:['Cenozoic (Tân sinh)','Mesozoic (Trung sinh)','Paleozoic (Cổ sinh)','Đại Thái cổ (Archean)'],a:2,e:'Đại Cổ sinh (Paleozoic) trải qua 6 kỉ: Cambri, Ordovic, Silur, Devon, Cacbon, Pecmi.'},
+{b:'19',q:'Trong giai đoạn người cổ Homo, có bao nhiêu nhận định ĐÚNG?\nI. Homo habilis là loài nguyên thuỷ nhất, có đời sống bầy đàn\nII. Homo erectus xuất hiện sau H.habilis, hộp sọ tăng hơn, biết chế tác công cụ đá\nIII. Homo neanderthalensis có lồi cằm, có thể có tiếng nói, biết lấy lửa nhân tạo\nIV. Trong chi Homo, mỗi loài ở châu lục khác nhau đều tiến hóa thành Homo sapiens',o:['1','2','3','4'],a:1,e:'Đúng: I (H.habilis nguyên thuỷ nhất). Sai: II (H.erectus chế tác công cụ nhưng chưa thành thạo như H.habilis theo văn bản, thực ra H.erectus mới thành thạo hơn – phát biểu II sai vì "sử dụng thành thạo"). III (H.neanderthalensis mới có lồi cằm là sai – Homo sapiens mới có lồi cằm). IV sai rõ ràng.'},
+// ─── BÀI 20 ───
+{b:'20',q:'Tập hợp toàn bộ các nhân tố bao quanh sinh vật, ảnh hưởng tới sự sinh trưởng, phát triển và tồn tại của sinh vật gọi là',o:['Môi trường sống','Nhân tố sinh thái','Giới hạn sinh thái','Ổ sinh thái'],a:0,e:'Môi trường sống là toàn bộ các nhân tố bao quanh sinh vật ảnh hưởng đến sự sinh trưởng, phát triển và tồn tại của chúng.'},
+{b:'20',q:'Nhân tố sinh thái nào sau đây là nhân tố HỮU SINH?',o:['Nhiệt độ ảnh hưởng đến sự nở trứng của loài rùa','Ánh sáng tác động lên các thảm thực vật','Cỏ dại và lúa cạnh tranh chất dinh dưỡng','Chất dinh dưỡng của đất'],a:2,e:'Cỏ dại và lúa cạnh tranh = quan hệ giữa các sinh vật = nhân tố hữu sinh. Nhiệt độ, ánh sáng, chất dinh dưỡng đất = nhân tố vô sinh.'},
+{b:'20',q:'Giun đũa sống ký sinh trong ruột non của người. Môi trường sống của giun đũa là',o:['Môi trường trên cạn','Môi trường nước','Môi trường sinh vật','Môi trường đất'],a:2,e:'Giun đũa sống trong cơ thể người = môi trường sinh vật (sinh vật sống trong cơ thể sinh vật khác).'},
+{b:'20',q:'Loài thực vật nào có thể tìm thấy chủ yếu trong môi trường ánh sáng yếu?',o:['Cây xương rồng','Cây bạch đàn','Cây dương xỉ','Cây dừa'],a:2,e:'Cây dương xỉ là thực vật ưa bóng, thích nghi với ánh sáng yếu (thường mọc dưới tán rừng).'},
+{b:'20',q:'Loài vi khuẩn Rhizobium sống cộng sinh với cây họ Đậu. Môi trường sống của vi khuẩn này là',o:['Môi trường trên cạn','Môi trường nước','Môi trường sinh vật','Môi trường đất'],a:2,e:'Vi khuẩn Rhizobium sống trong nốt sần rễ cây họ Đậu = môi trường sinh vật.'},
+{b:'20',q:'Cho 6 nhân tố, bao nhiêu nhân tố là nhân tố KHÔNG phụ thuộc vào mật độ quần thể?\n(1)Cạnh tranh trong quần thể (2)Kẻ thù ăn thịt (3)Sức sinh sản và tử vong (4)Phát tán cá thể (5)Nhiệt độ, độ ẩm, ánh sáng',o:['2','3','4','1'],a:3,e:'Nhân tố không phụ thuộc mật độ: chỉ có (5) nhiệt độ, độ ẩm, ánh sáng. Các nhân tố còn lại đều phụ thuộc mật độ.'},
+{b:'20',q:'Khi nói về nhân tố sinh thái hữu sinh, có bao nhiêu phát biểu đúng?\nI. Mức độ tác động của nhân tố hữu sinh phụ thuộc vào mật độ quần thể\nII. Mật độ càng cao thì mức độ tác động nhân tố hữu sinh càng mạnh\nIII. Nhân tố hữu sinh có thể làm biến động số lượng cá thể\nIV. Nhân tố vật lý, hóa học cũng được xếp vào nhân tố hữu sinh',o:['1','2','3','4'],a:2,e:'I, II, III đúng. IV sai (nhân tố vật lý, hóa học là nhân tố VÔ sinh).'},
+{b:'20',q:'Có bao nhiêu phát biểu đúng về ảnh hưởng của nhiệt độ đến sinh vật trong các phát biểu sau?\n(1)Các loài sinh vật phản ứng khác nhau với nhiệt độ\n(2)Động vật hằng nhiệt phân bố rộng hơn biến nhiệt\n(3)Chỉ động vật phản ứng với nhiệt độ, thực vật không phản ứng\n(4)Động vật biến nhiệt thích nghi cao hơn hằng nhiệt\n(5)Nhiệt độ không ảnh hưởng lượng thức ăn và tốc độ tiêu hóa\n(6)Nhiệt độ có thể ảnh hưởng đến tập tính động vật',o:['2','3','4','5'],a:1,e:'Đúng: (1), (2), (6). Sai: (3)thực vật cũng phản ứng; (4)hằng nhiệt thích nghi hơn; (5)nhiệt độ ảnh hưởng tiêu hóa.'},
+// ─── BÀI 21 ───
+{b:'21',q:'Phân bố cá thể theo nhóm trong quần thể có ý nghĩa sinh thái gì?',o:['Các cá thể hỗ trợ nhau chống lại điều kiện bất lợi','Các cá thể tận dụng được nguồn sống từ môi trường','Giảm mức độ cạnh tranh giữa các cá thể','Tăng khả năng sinh sản của các cá thể'],a:0,e:'Phân bố theo nhóm giúp các cá thể hỗ trợ nhau chống lại điều kiện bất lợi của môi trường (gió, bão, thiếu thức ăn...).'},
+{b:'21',q:'Trường hợp nào là biến động số lượng KHÔNG theo chu kì?',o:['Ếch nhái tăng nhiều vào mùa mưa','Sâu hại xuất hiện nhiều vào mùa xuân','Gà rừng chết rét','Cá cơm ở biển Peru chết nhiều do dòng nước nóng 7 năm/lần'],a:2,e:'Gà rừng chết rét là biến động không theo chu kì (do thời tiết bất thường). Ếch nhái, sâu hại theo mùa, cá cơm theo El Niño đều là chu kì.'},
+{b:'21',q:'Tập hợp nào sau đây KHÔNG phải là quần thể?',o:['Đàn voi ở rừng Tánh Linh','Đàn chim hải âu ở quần đảo Trường Sa','Rừng cọ ở Vĩnh Phú','Cá ở Hồ Tây'],a:3,e:'Cá ở Hồ Tây gồm nhiều loài cá khác nhau → không phải quần thể (quần thể phải cùng loài). Rừng cọ cùng loài = quần thể.'},
+{b:'21',q:'Khi kích thước quần thể giảm xuống dưới mức tối thiểu thì',o:['Sự hỗ trợ tăng, chống chọi tốt với thay đổi môi trường','Khả năng sinh sản tăng do cơ hội gặp nhau nhiều hơn','Quần thể dễ rơi vào trạng thái suy giảm dẫn đến diệt vong','Trong quần thể có sự cạnh tranh gay gắt giữa các cá thể'],a:2,e:'Khi kích thước dưới mức tối thiểu: mất cân bằng giới tính, khả năng sinh sản giảm → suy giảm và diệt vong.'},
+{b:'21',q:'Kích thước quần thể phụ thuộc vào',o:['Mức nhập cư và xuất cư của quần thể','Mức sinh sản và tử vong của quần thể','Tỷ lệ sinh và tử cũng như xuất nhập cư','Mật độ cá thể của quần thể'],a:2,e:'Kích thước quần thể = N + B - D + I - E (B=sinh sản, D=tử vong, I=nhập cư, E=xuất cư).'},
+{b:'21',q:'Ổ sinh thái của loài là',o:['Không gian sinh thái mà ở đó tất cả nhân tố sinh thái nằm trong giới hạn cho loài tồn tại','Nơi ở của loài đó','Khoảng thuận lợi về nhiệt độ đối với loài','Khu vực kiếm ăn của loài đó'],a:0,e:'Ổ sinh thái là "không gian sinh thái" mà ở đó tất cả các nhân tố sinh thái của môi trường nằm trong giới hạn sinh thái cho phép loài tồn tại và phát triển.'},
+{b:'21',q:'Quan hệ cạnh tranh giữa các cá thể trong quần thể sinh vật',o:['Đảm bảo số lượng và phân bố cá thể phù hợp với sức chứa môi trường','Thường làm quần thể suy thoái đến diệt vong','Chỉ xảy ra ở động vật, không xảy ra ở thực vật','Xuất hiện khi mật độ cá thể xuống quá thấp'],a:0,e:'Cạnh tranh trong quần thể là động lực điều chỉnh số lượng và phân bố cá thể phù hợp với sức chứa của môi trường.'},
+{b:'21',q:'Ví dụ nào thể hiện mối quan hệ HỖ TRỢ trong quần thể?',o:['Hải cẩu đực đầu đàn loại bỏ con đực khác khỏi đàn','Cá mập con mới nở sử dụng trứng chưa nở làm thức ăn','Chó rừng đi kiếm ăn theo đàn, bắt được trâu rừng lớn hơn','Cây phong lan sống bám trên thân cây gỗ'],a:2,e:'Chó rừng đi kiếm ăn theo đàn = hỗ trợ trong quần thể. A và B là cạnh tranh. D là hội sinh giữa 2 loài (khác loài, không phải trong quần thể).'},
+{b:'21',q:'Ví dụ nào sau đây KHÔNG đúng với mối quan hệ cạnh tranh trong quần thể?',o:['Các cây tre sống thành bụi tăng khả năng chống gió bão','Hiện tượng tỉa thưa tự nhiên ở thực vật','Hai con trâu đang húc nhau củng cố vị thế trong bầy','Hai con báo đốm tranh giành thức ăn'],a:0,e:'Cây tre sống thành bụi tăng khả năng chống gió bão = quan hệ HỖ TRỢ trong quần thể. B, C, D là cạnh tranh.'},
+{b:'21',q:'Tập hợp cá thể nào KHÔNG phải quần thể?\nI. Đàn sói sống trong rừng\nII. Lồng gà bán ngoài chợ\nIII. Đàn cá rô phi đơn tính sống dưới ao\nIV. Các con ong thợ lấy mật ở vườn hoa\nV. Một rừng cây',o:['2','4','3','5'],a:2,e:'Không phải quần thể: II (gà bán không cùng không gian sống tự nhiên), III (đơn tính không sinh sản được), IV (ong thợ nhiều tổ khác nhau). = 3 tập hợp không phải quần thể.'},
+// ─── BÀI 22 ───
+{b:'22',q:'Khi cạnh tranh giữa các cá thể trong quần thể gay gắt sẽ dẫn đến',o:['Tăng tỉ lệ tử vong','Tăng tỉ lệ sinh sản','Tăng khả năng nhập cư','Tăng khả năng sống sót'],a:0,e:'Cạnh tranh gay gắt trong quần thể → tỉ lệ tử vong tăng, tỉ lệ sinh giảm, quần thể giảm kích thước.'},
+{b:'22',q:'Phát biểu đúng về kích thước quần thể sinh vật?',o:['Quần thể phát triển ổn định trong khoảng kích thước tối đa','Quần thể phát triển ổn định trong khoảng kích thước tối thiểu','Kích thước tối đa là số lượng cá thể lớn nhất phù hợp với sức chứa môi trường','Kích thước tối thiểu là số lượng cá thể nhỏ nhất phù hợp với sức chứa môi trường'],a:2,e:'Kích thước tối đa là số lượng cá thể lớn nhất mà môi trường có thể duy trì (= sức chứa K).'},
+{b:'22',q:'Phát biểu đúng về mật độ cá thể trong quần thể?',o:['Mật độ liên quan đến mức sử dụng nguồn sống, ô nhiễm môi trường, số lần gặp đực-cái','Mật độ thường không đổi theo điều kiện môi trường, theo mùa hoặc theo năm','Mật độ cho biết số lượng cá thể trong vùng phân bố','Số cá thể trên đơn vị diện tích/thể tích của mọi sinh cảnh loài sinh sống'],a:0,e:'Mật độ ảnh hưởng đến: mức sử dụng nguồn sống, ô nhiễm, tần suất gặp nhau giữa đực và cái trong mùa sinh sản.'},
+// ─── BÀI 23 ───
+{b:'23',q:'Các đặc trưng cơ bản của quần xã là',o:['Thành phần loài, tỉ lệ nhóm tuổi, mật độ','Độ phong phú, sự phân bố các quần thể trong quần xã','Thành phần loài, sức sinh sản và sự tử vong, chức năng dinh dưỡng','Thành phần loài, sự phân bố các quần thể trong quần xã, chức năng dinh dưỡng'],a:3,e:'Đặc trưng cơ bản của quần xã: thành phần loài, sự phân bố các quần thể trong quần xã, chức năng dinh dưỡng.'},
+{b:'23',q:'Quần xã là',o:['Tập hợp các sinh vật cùng loài cùng sống trong khoảng không gian xác định','Tập hợp các quần thể khác loài, cùng sống trong khoảng không gian xác định, ở thời điểm xác định','Tập hợp các quần thể khác loài, cùng sống trong một khu vực, vào một thời điểm nhất định','Tập hợp các quần thể khác loài, cùng sống trong khoảng không gian xác định, vào một thời điểm nhất định'],a:3,e:'Quần xã: tập hợp các quần thể khác loài, cùng sống trong không gian xác định, vào một thời điểm nhất định, có quan hệ chặt chẽ với nhau.'},
+{b:'23',q:'Loài ưu thế là loài có vai trò quan trọng trong quần xã do',o:['Số lượng cá thể nhiều','Sức sống mạnh, sinh khối lớn, hoạt động mạnh','Có khả năng tiêu diệt các loài khác','Số lượng cá thể nhiều, sinh khối lớn, hoạt động mạnh'],a:3,e:'Loài ưu thế: số lượng cá thể nhiều, sinh khối lớn, HOẶC hoạt động mạnh – có ảnh hưởng lớn đến quần xã.'},
+{b:'23',q:'Quan hệ hỗ trợ trong quần xã sinh vật bao gồm',o:['Cộng sinh, hợp tác và tương trợ','Cộng gộp, hợp tác và hội sinh','Cộng sinh, hợp tác và hội sinh','Tương trợ, hợp tác và hội sinh'],a:2,e:'Quan hệ hỗ trợ trong quần xã: cộng sinh, hợp tác và hội sinh.'},
+{b:'23',q:'Quan hệ giữa hai loài: một loài có lợi, một loài không lợi không hại là mối quan hệ nào?',o:['Cộng sinh','Hội sinh','Hợp tác','Ức chế'],a:1,e:'Hội sinh: một loài có lợi (+), một loài không lợi không hại (0). Cộng sinh: cả hai cùng có lợi (+,+).'},
+{b:'23',q:'Sinh vật sản xuất gồm những sinh vật có khả năng',o:['Tổng hợp chất hữu cơ của cơ thể từ chất vô cơ','Tổng hợp chất vô cơ của cơ thể từ chất hữu cơ','Phân giải chất hữu cơ thành chất vô cơ','Phân giải chất vô cơ thành chất hữu cơ'],a:0,e:'Sinh vật sản xuất (autotrophes) là sinh vật tự dưỡng, tổng hợp chất hữu cơ từ chất vô cơ (quang hợp/hóa tổng hợp).'},
+// ─── BÀI 24 ───
+{b:'24',q:'Sự phân bố sinh vật theo chiều thẳng đứng trong quần xã rừng thể hiện đặc trưng nào?',o:['Độ đa dạng loài','Thành phần loài','Sự phân tầng','Loài đặc trưng'],a:2,e:'Sự phân bố theo chiều thẳng đứng (tầng cây gỗ, cây bụi, thảm cỏ...) là đặc trưng phân tầng của quần xã.'},
+{b:'24',q:'Trong ao nuôi cá, cá rô phi chiếm số lượng lớn và ảnh hưởng đến các loài khác. Cá rô phi là',o:['Loài đặc trưng','Loài ưu thế','Loài ngoại lai','Loài thứ yếu'],a:1,e:'Cá rô phi chiếm số lượng lớn, ảnh hưởng đến quần xã = loài ưu thế.'},
+{b:'24',q:'Khi thực hành nghiên cứu quần xã ngoài thiên nhiên, xác định tên loài và số lượng nhằm mục đích chủ yếu là',o:['Xác định nơi sống của sinh vật','Xác định thành phần loài và độ đa dạng của quần xã','Đánh giá điều kiện khí hậu khu vực','Xác định kích thước quần thể'],a:1,e:'Mục đích chủ yếu: xác định thành phần loài và độ đa dạng của quần xã.'},
+{b:'24',q:'Loài nào sau đây KHÔNG là loài ngoại lai xâm lấn ở Việt Nam?',o:['Ốc bươu vàng','Rùa tai đỏ','Cây mai dương','Cầy tai trắng'],a:3,e:'Cầy tai trắng là loài bản địa của Việt Nam. Ốc bươu vàng (từ Nam Mỹ), rùa tai đỏ (từ Mỹ), cây mai dương (từ châu Mỹ) là loài ngoại lai xâm lấn.'},
+{b:'24',q:'Để thu được năng suất cá tối đa trên một đơn vị diện tích mặt nước, cần',o:['Nuôi nhiều loài cá ở các tầng nước khác nhau','Nuôi nhiều loài cá thuộc cùng một chuỗi thức ăn','Nuôi nhiều loài cá với mật độ càng cao càng tốt','Nuôi một loài cá thích hợp với mật độ cao và cho dư thừa thức ăn'],a:0,e:'Nuôi nhiều loài cá ở các tầng nước khác nhau → tận dụng tối đa nguồn sống, giảm cạnh tranh, tăng năng suất.'},
+// ─── BÀI 25 ───
+{b:'25',q:'Một cấp độ tổ chức sống bao gồm quần xã sinh vật và sinh cảnh được gọi là',o:['Quần thể','Quần xã','Hệ sinh thái','Sinh cảnh'],a:2,e:'Hệ sinh thái = quần xã sinh vật + sinh cảnh (nhân tố vô sinh).'},
+{b:'25',q:'Đồng ruộng, vườn cây ăn trái, rừng trồng là ví dụ về',o:['Hệ sinh thái nhân tạo','Hệ sinh thái trên cạn','Hệ sinh thái dưới nước','Hệ sinh thái tự nhiên'],a:0,e:'Đồng ruộng, vườn cây ăn trái, rừng trồng đều do con người tạo ra và duy trì = hệ sinh thái nhân tạo.'},
+{b:'25',q:'Trong chuỗi thức ăn: Tảo lục → Tôm → Cá rô → Chim bói cá. Cá rô là',o:['Sinh vật tiêu thụ bậc 3, bậc dinh dưỡng cấp 3','Sinh vật tiêu thụ bậc 1, bậc dinh dưỡng cấp 3','Sinh vật tiêu thụ bậc 2, bậc dinh dưỡng cấp 3','Sinh vật tiêu thụ bậc 3, bậc dinh dưỡng cấp 2'],a:2,e:'Tảo(SX) → Tôm(TT1) → Cá rô(TT2) → Chim bói cá(TT3). Cá rô = SV tiêu thụ bậc 2 = bậc dinh dưỡng cấp 3.'},
+{b:'25',q:'Chuỗi thức ăn bắt đầu là sinh vật sản xuất, bậc dinh dưỡng cấp 1 là',o:['Loài sinh vật tiêu thụ bậc 1','Loài sinh vật tiêu thụ bậc 2','Loài sinh vật phân giải','Loài sinh vật sản xuất'],a:3,e:'Bậc dinh dưỡng cấp 1 = sinh vật sản xuất (thực vật, vi khuẩn quang hợp).'},
+{b:'25',q:'Hiệu suất sinh thái là',o:['Tỉ lệ % chuyển hóa năng lượng giữa các loài','Tỉ lệ % chuyển hóa năng lượng giữa các chuỗi thức ăn','Tỉ lệ % chuyển hóa năng lượng giữa các bậc dinh dưỡng','Tỉ lệ % chuyển hóa năng lượng giữa các lưới thức ăn'],a:2,e:'Hiệu suất sinh thái = tỉ lệ % năng lượng được chuyển hóa giữa các bậc dinh dưỡng kế tiếp nhau.'},
+{b:'25',q:'Trao đổi vật chất trong hệ sinh thái gồm',o:['Trao đổi giữa quần xã này với quần xã khác và giữa các sinh vật trong quần xã','Trao đổi giữa các quần xã nhau và giữa các sinh vật trong quần xã','Trao đổi giữa quần xã này với quần thể và giữa các sinh vật trong quần xã','Trao đổi giữa quần xã với sinh cảnh và giữa các sinh vật trong quần xã'],a:3,e:'Trao đổi vật chất trong HST: giữa quần xã với sinh cảnh (vô sinh ↔ hữu sinh) và giữa các sinh vật với nhau trong quần xã.'},
+{b:'25',q:'Một hồ nước ngọt dần bị bồi lắng rồi thành vùng đất ngập nước rồi thành rừng là ví dụ về',o:['Diễn thế nguyên sinh trên cạn','Diễn thế thứ sinh dưới nước','Diễn thế nguyên sinh dưới nước','Diễn thế thứ sinh trên cạn'],a:2,e:'Hồ nước ngọt chưa có sinh vật (nguyên thủy) dần bị bồi lắng → diễn thế nguyên sinh dưới nước.'},
+// ─── BÀI 26 ───
+{b:'26',q:'Quy trình thiết kế bể cá cảnh gồm bao nhiêu bước?',o:['3','4','5','6'],a:2,e:'Quy trình thiết kế bể cá cảnh gồm 5 bước.'},
+{b:'26',q:'Bể cá cảnh là ví dụ về hệ sinh thái nào?',o:['Hệ sinh thái tự nhiên','Hệ sinh thái nhân tạo','Hệ sinh thái biển','Hệ sinh thái trên cạn'],a:1,e:'Bể cá cảnh do con người thiết kế và duy trì = hệ sinh thái nhân tạo.'},
+{b:'26',q:'Bể cá cảnh là',o:['Hệ sinh thái không khép kín và có khả năng tự phục hồi','Hệ sinh thái khép kín và có khả năng tự phục hồi','Hệ sinh thái không khép kín và không có khả năng tự phục hồi','Hệ sinh thái khép kín và không có khả năng tự phục hồi'],a:2,e:'Bể cá cảnh không khép kín (cần bổ sung thức ăn, thay nước) và không có khả năng tự phục hồi (cần con người duy trì).'},
+{b:'26',q:'Thành phần hữu sinh của hệ sinh thái bể nuôi cá cảnh gồm',o:['Cá cảnh, nước sạch, cây rong đuôi chồn, cây xương cá','Cá cảnh, nước sạch, đất, cây sen đá, cây lưỡi hổ','Cá cảnh, đất, cây rong đuôi chồn, cây lưỡi hổ','Cá cảnh, cây rong đuôi chồn, cây xương cá, cây sen đá'],a:3,e:'Thành phần hữu sinh: sinh vật sống = cá cảnh (động vật), cây rong đuôi chồn, cây xương cá, cây sen đá (thực vật). Nước và đất là vô sinh.'},
+{b:'26',q:'Trong thiết kế hệ sinh thái nhân tạo, thành phần nào bắt buộc phải có để duy trì sự tồn tại lâu dài?',o:['Sinh vật tiêu thụ bậc cao','Sinh vật phân giải','Sinh vật sản xuất','Động vật ăn thịt'],a:2,e:'Sinh vật sản xuất (thực vật, tảo) bắt buộc phải có để tổng hợp chất hữu cơ từ năng lượng ánh sáng, là nền tảng của chuỗi thức ăn.'},
+// ─── BÀI 27 ───
+{b:'27',q:'Sinh thái học phục hồi có vai trò',o:['Phục hồi các hệ sinh thái đã bị suy thoái','Tăng cường các hệ sinh thái đã bị suy thoái','Cải tiến các hệ sinh thái sắp bị suy thoái','Bảo tồn các hệ sinh thái đã bị suy thoái'],a:0,e:'Sinh thái học phục hồi: áp dụng các nguyên lý sinh thái học để phục hồi các hệ sinh thái đã bị suy thoái.'},
+{b:'27',q:'Sinh thái học bảo tồn có vai trò',o:['Phục hồi các hệ sinh thái đã bị suy thoái','Duy trì, bảo vệ đa dạng sinh học','Cải tiến các hệ sinh thái sắp bị suy thoái','Bảo tồn các hệ sinh thái đã bị suy thoái'],a:1,e:'Sinh thái học bảo tồn: lĩnh vực khoa học ứng dụng để duy trì, bảo vệ đa dạng sinh học.'},
+{b:'27',q:'Tác dụng của "Loại trừ các loài ngoại lai xâm nhập" trong phục hồi đa dạng sinh học là',o:['Gia tăng sinh học giúp phục hồi hệ sinh thái','Tránh gây ô nhiễm môi trường','Phục hồi diện tích rừng và nơi ở cho các loài','Giảm sự cạnh tranh đối với các loài bản địa'],a:3,e:'Loại trừ loài ngoại lai xâm nhập giúp giảm sự cạnh tranh, cho phép các loài bản địa phục hồi.'},
+{b:'27',q:'Sự phong phú về gen, loài sinh vật và hệ sinh thái trong tự nhiên gọi là',o:['Gia tăng sinh học','Tài nguyên sinh học','Đa dạng sinh học','Bảo tồn hệ sinh thái'],a:2,e:'Đa dạng sinh học = sự phong phú về gen, loài và hệ sinh thái trong tự nhiên.'},
+{b:'27',q:'Ý nào KHÔNG thuộc phương pháp phục hồi hệ sinh thái?',o:['Phục hồi đa dạng sinh học','Phục hồi và cải tạo môi trường','Tích cực xây dựng cầu đường, đô thị hiện đại','Thông qua pháp chế, tuyên truyền và giáo dục'],a:2,e:'Xây dựng cầu đường, đô thị hiện đại là hoạt động phát triển có thể phá hủy môi trường, không phải phục hồi hệ sinh thái.'},
+{b:'27',q:'Tại sao con người cần phục hồi hệ sinh thái?',o:['Thế giới đang đối mặt với chiến tranh, suy giảm ĐDSH, suy thoái môi trường','Thế giới đang đối mặt với biến đổi khí hậu, chiến tranh, ô nhiễm môi trường','Thế giới đang đối mặt với biến đổi khí hậu, suy giảm ĐDSH, suy thoái môi trường','Thế giới đang đối mặt với biến đổi khí hậu, suy giảm ĐDSH, dịch bệnh'],a:2,e:'Ba thách thức chính đòi hỏi phục hồi hệ sinh thái: biến đổi khí hậu, suy giảm đa dạng sinh học, suy thoái môi trường.'},
+{b:'27',q:'Thứ tự đúng các bước điều tra thực trạng bảo tồn hệ sinh thái là',o:['1→2→5→4→3','1→2→3→4→5','1→3→2→5→4','2→1→4→5→3'],a:0,e:'Thứ tự: 1(Xác định địa điểm)→2(Điều tra)→5(Chụp ảnh, ghi nhận)→4(Đánh giá, đề xuất)→3(Báo cáo).'},
+{b:'27',q:'Hoạt động nào thực hiện bảo tồn đa dạng sinh học hệ sinh thái? (1.Lưới kéo tầng đáy; 2.Ngăn ngừa sinh vật ngoại lai; 3.Bảo vệ rừng; 4.Tuân theo công ước bảo tồn; 5.Chuyển đổi đất nông nghiệp làm sân golf; 6.Quản lý loài nguy cấp)',o:['1, 2, 3, 4','1, 2, 4, 6','2, 3, 4, 6','2, 3, 4, 5'],a:2,e:'Hoạt động bảo tồn ĐDSH: 2(ngăn ngừa ngoại lai), 3(bảo vệ rừng), 4(tuân theo công ước), 6(quản lý loài nguy cấp). Lưới kéo tầng đáy (1) và chuyển đất nông nghiệp làm sân golf (5) là hoạt động PHÁ HỦY ĐDSH.'},
+];
+
+// TRUE/FALSE questions
+const TF = [
+{b:'17',q:'Người ta dùng thuốc xịt muỗi mới. Lần đầu diệt gần hết, sau đó quần thể muỗi tăng dần, mỗi lần xịt sau chỉ diệt được ít. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Quần thể muỗi vốn đa dạng về kiểu gene, kiểu hình nên khi xịt thuốc có những kiểu gene thích nghi không bị đào thải.',a:true,e:'Đúng. Quần thể đa dạng kiểu gene ban đầu → những cá thể có gene kháng thuốc sống sót.'},
+  {t:'b. Việc xịt muỗi gây ra sự chọn lọc, từ đó làm tăng tần số allele kháng thuốc trong quần thể.',a:true,e:'Đúng. CLTN chống lại allele mẫn cảm → tần số allele kháng thuốc tăng dần qua các thế hệ.'},
+  {t:'c. Loài muỗi mới có khả năng kháng thuốc đã di cư tới vùng đó thay thế cho loài đã bị diệt.',a:false,e:'Sai. Không phải di cư loài mới mà là CLTN đã chọn lọc những cá thể kháng thuốc trong quần thể ban đầu.'},
+  {t:'d. Thuốc diệt muỗi đã tác động tới DNA của muỗi để tạo nên muỗi có gene kháng thuốc.',a:false,e:'Sai. Thuốc không tạo ra đột biến mới. Đột biến kháng thuốc đã có sẵn trong quần thể; thuốc chỉ chọn lọc các cá thể mang đột biến đó.'},
+]},
+{b:'17',q:'Chim sẻ Geospiza fortis ở quần đảo Galapagos. Kích thước mỏ TB năm 1976: 9,4mm. Năm 1977, hạn hán làm phần lớn cây hạt nhỏ chết, 80% chim sẻ chết (chủ yếu chim mỏ nhỏ). Năm 1978, kích thước mỏ TB: 10,2mm. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Kích thước khác nhau của các loại hạt là nguyên nhân trực tiếp gây biến đổi kích thước mỏ.',a:false,e:'Sai. Kích thước hạt không trực tiếp gây biến đổi kích thước mỏ. Đây là CLTN: chim mỏ lớn sống sót → tần số allele mỏ lớn tăng.'},
+  {t:'b. Tiến hóa đang diễn ra ở quần thể chim sẻ trên đảo Galapagos: thay đổi tần số allele và kiểu gene dẫn đến thay đổi đặc điểm di truyền.',a:true,e:'Đúng. Sự thay đổi kích thước mỏ TB (9,4→10,2mm) phản ánh sự thay đổi tần số allele trong quần thể = tiến hóa đang diễn ra.'},
+  {t:'c. Chim sẻ có đặc điểm thích nghi liên quan đến kích thước mỏ và đặc điểm thích nghi này có tính hợp lý tương đối.',a:true,e:'Đúng. Mỏ to thích nghi tốt với hạt to cứng nhưng chỉ hợp lý tương đối (khi hạt nhỏ quay lại, mỏ nhỏ lại có lợi hơn).'},
+  {t:'d. Nếu mưa nhiều trở lại, cây hạt nhỏ sinh trưởng lại, chim mỏ nhỏ sẽ có lợi thế, kích thước mỏ TB của quần thể sẽ giảm về gần mức ban đầu.',a:true,e:'Đúng. Khi môi trường đảo chiều, CLTN sẽ đảo chiều: ưu thế chuyển sang chim mỏ nhỏ → kích thước mỏ TB sẽ giảm.'},
+]},
+{b:'17',q:'Cây phát sinh chủng loại của Bộ ăn thịt (Carnivora). Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Họ Chồn (Mustelidae) và họ Mèo (Felidae) có quan hệ họ hàng gần hơn so với Họ Chồn và Họ Chó (Canidae).',a:true,e:'Đúng. Trên cây phát sinh, Mustelidae và Felidae phân nhánh từ tổ tiên chung gần hơn so với Mustelidae và Canidae.'},
+  {t:'b. Sói đồng cỏ (Canis latrans) và sói xám (Canis lupus) là những loài khác nhau thuộc cùng một chi.',a:true,e:'Đúng. Cả hai đều thuộc chi Canis nhưng là hai loài khác nhau (latrans và lupus).'},
+  {t:'c. Báo hoa mai (Panthera pardus) có thể có nguồn gốc từ loài mèo nhà (Felis catus) ngày nay.',a:false,e:'Sai. Báo hoa mai và mèo nhà là hai nhánh tiến hóa song song từ tổ tiên chung. Báo không tiến hóa từ mèo nhà.'},
+  {t:'d. Họ Lửng (Taxidae) giống Rái cá (Lutra) về hình thái giải phẫu nên có thể đã tiến hóa từ một tổ tiên chung.',a:true,e:'Đúng. Taxidae và Lutra đều thuộc họ Chồn (Mustelidae), cùng chung tổ tiên.'},
+]},
+{b:'17',q:'Nghiên cứu bướm ở khu rừng gần khu công nghiệp (bị ô nhiễm) so với rừng không ô nhiễm. Kết quả: Rừng không ô nhiễm: 13,7% bướm sáng bị ăn, 86,3% bướm tối bị ăn. Rừng ô nhiễm: 74,1% bướm sáng bị ăn, 25,9% bướm tối bị ăn. Đúng hay sai?',stmts:[
+  {t:'a. Ở rừng không ô nhiễm, chim ăn thịt các loại bướm như nhau.',a:false,e:'Sai. Rõ ràng ở rừng không ô nhiễm, bướm tối bị ăn nhiều hơn (86,3% vs 13,7%) → không ăn như nhau.'},
+  {t:'b. Chim dùng thị giác để tìm kiếm thức ăn.',a:true,e:'Đúng. Kết quả cho thấy chim ăn bướm nổi bật (tương phản với nền) nhiều hơn = chim dùng thị giác để phát hiện con mồi.'},
+  {t:'c. Trong rừng bị ô nhiễm, bướm màu tối có nhiều ưu thế về sống sót và sinh sản hơn.',a:true,e:'Đúng. Rừng ô nhiễm (vỏ cây đen do khói): bướm tối khó phát hiện → bị ăn ít (25,9%) → ưu thế sống sót và sinh sản cao hơn.'},
+  {t:'d. Khi rừng bị ô nhiễm, quần thể bướm tăng cường tạo ra các biến dị màu sắc thân tối nhiều hơn.',a:false,e:'Sai. Quần thể không "tạo ra" biến dị theo ý chí. Biến dị xuất hiện ngẫu nhiên, CLTN chỉ tích lũy biến dị màu tối có sẵn.'},
+]},
+{b:'17',q:'Sa giông có chất độc tetrodotoxin, bụng màu cam, mắt vàng. Kỳ giông không có tetrodotoxin nhưng có bụng cam và mắt vàng giống sa giông. Chim giẻ cùi ít tấn công kỳ giông hơn các kỳ giông khác. Đúng hay sai?',stmts:[
+  {t:'a. Chim giẻ cùi học được cách tránh sa giông nên tránh ăn thịt kỳ giông có bụng màu cam và mắt màu vàng.',a:true,e:'Đúng. Chim học cách tránh con mồi có màu sắc cảnh báo (bụng cam, mắt vàng) sau khi tiếp xúc với sa giông độc.'},
+  {t:'b. Bụng màu cam và mắt màu vàng là đặc điểm thích nghi của kỳ giông.',a:true,e:'Đúng. Kỳ giông có ngoại hình giống sa giông độc (mô phỏng Batesian mimicry) → được bảo vệ khỏi kẻ thù = thích nghi.'},
+  {t:'c. Trong cùng khu phân bố với sa giông, số lượng kỳ giông có bụng cam và mắt vàng ngày càng gia tăng.',a:true,e:'Đúng. CLTN ưu thế cho kỳ giông có màu sắc giống sa giông → tần số cá thể có kiểu hình này tăng dần.'},
+  {t:'d. Kỳ giông có màu bụng và mắt giống sa giông không ảnh hưởng gì đến sự tồn tại của loài này.',a:false,e:'Sai. Màu sắc này giúp kỳ giông tránh bị kẻ thù ăn → ảnh hưởng tích cực đến sự tồn tại của loài.'},
+]},
+{b:'17',q:'Khi nói về quan niệm của thuyết tiến hóa tổng hợp hiện đại, mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Tiến hóa nhỏ diễn ra trong phạm vi tương đối hẹp, trong thời gian lịch sử tương đối ngắn, có thể nghiên cứu bằng thực nghiệm.',a:true,e:'Đúng. Tiến hóa nhỏ = biến đổi trong quần thể, phạm vi hẹp, thời gian ngắn, có thể quan sát được.'},
+  {t:'b. Điều kiện địa lý là nhân tố ngăn cản các cá thể của các quần thể cùng loài gặp gỡ và giao phối với nhau.',a:true,e:'Đúng. Cách li địa lý ngăn cản luồng gene giữa các quần thể.'},
+  {t:'c. Giao phối là nhân tố làm cho đột biến được phát tán.',a:true,e:'Đúng. Giao phối phát tán đột biến trong quần thể và tạo biến dị tổ hợp.'},
+  {t:'d. CLTN đào thải allele lặn làm thay đổi tần số allele chậm hơn so với trường hợp chọn lọc chống lại allele trội.',a:true,e:'Đúng. Allele lặn tồn tại ở trạng thái dị hợp (ẩn) nên CLTN khó đào thải → thay đổi tần số allele chậm hơn allele trội.'},
+]},
+{b:'17',q:'Khi nói về đặc điểm của nhân tố tiến hóa đột biến. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Đột biến làm tăng tính đa dạng di truyền cho quần thể.',a:true,e:'Đúng. Đột biến tạo ra các allele mới → tăng tính đa dạng di truyền của quần thể.'},
+  {t:'b. Đột biến là nhân tố tiến hóa định hướng.',a:false,e:'Sai. Đột biến là nhân tố tiến hóa KHÔNG định hướng (ngẫu nhiên). CLTN là nhân tố định hướng.'},
+  {t:'c. Đột biến làm thay đổi tần số allele của quần thể một cách từ từ, chậm chạp.',a:true,e:'Đúng. Tần suất đột biến rất thấp (10⁻⁶ đến 10⁻⁴) → thay đổi tần số allele rất chậm.'},
+  {t:'d. Đa số đột biến là trung tính.',a:true,e:'Đúng. Đa số đột biến gen là trung tính (không có lợi không có hại trong điều kiện môi trường hiện tại).'},
+]},
+{b:'17',q:'Hiệu ứng thắt cổ chai (bottleneck). Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Mô tả một trường hợp dẫn đến dòng gene.',a:false,e:'Sai. Hiệu ứng thắt cổ chai dẫn đến PHIÊU BẠT DI TRUYỀN, không phải dòng gene.'},
+  {t:'b. Mô tả hiệu ứng thắt cổ chai dẫn đến phiêu bạt di truyền.',a:true,e:'Đúng. Giảm kích thước quần thể đột ngột (thắt cổ chai) → phiêu bạt di truyền (vốn gene bị thay đổi ngẫu nhiên).'},
+  {t:'c. Hiện tượng này: những cá thể thích nghi hay không thích nghi đều có thể bị đào thải.',a:true,e:'Đúng. Trong hiệu ứng thắt cổ chai, sự sống sót mang tính ngẫu nhiên, không phân biệt thích nghi hay không.'},
+  {t:'d. Quần thể cuối trên sơ đồ có tần số kiểu gene thích nghi với điều kiện môi trường sống.',a:false,e:'Sai. Sau hiệu ứng thắt cổ chai, tần số kiểu gene là ngẫu nhiên, không nhất thiết là kiểu gene thích nghi.'},
+]},
+{b:'17',q:'Hiệu ứng sáng lập (founder effect) – một nhóm nhỏ cá thể tách ra thành lập quần thể mới. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Mô tả một trường hợp dẫn đến chọn lọc tự nhiên.',a:false,e:'Sai. Hiệu ứng sáng lập dẫn đến phiêu bạt di truyền, không phải CLTN.'},
+  {t:'b. Mô tả hiệu ứng sáng lập dẫn đến phiêu bạt di truyền.',a:true,e:'Đúng. Một nhóm nhỏ cá thể sáng lập quần thể mới mang vốn gene không đại diện → phiêu bạt di truyền.'},
+  {t:'c. Nguyên nhân gây ra hiệu ứng này là do tác động của các nhân tố môi trường (gió lùa...) làm phát tán nhóm cá thể.',a:true,e:'Đúng. Gió, sóng, dòng chảy... có thể mang nhóm cá thể nhỏ đến nơi mới để sáng lập quần thể mới.'},
+  {t:'d. Quần thể cuối cùng của sơ đồ có vốn gene ít đa dạng hơn so với quần thể gốc.',a:true,e:'Đúng. Quần thể sáng lập nhỏ chỉ mang một phần vốn gene của quần thể gốc → kém đa dạng hơn.'},
+]},
+{b:'23',q:'Mỗi phát biểu sau đây đúng hay sai khi nói về độ đa dạng của quần xã?',stmts:[
+  {t:'a. Độ đa dạng của quần xã thường được duy trì ổn định, không phụ thuộc điều kiện sống của môi trường.',a:false,e:'Sai. Độ đa dạng của quần xã thay đổi theo điều kiện của môi trường sống.'},
+  {t:'b. Trong quá trình diễn thế nguyên sinh, độ đa dạng của quần xã giảm dần.',a:false,e:'Sai. Trong diễn thế nguyên sinh, độ đa dạng của quần xã tăng dần từ quần xã nghèo đến quần xã đỉnh cực.'},
+  {t:'c. Quần xã có độ đa dạng càng cao thì cấu trúc của quần xã càng dễ bị biến động.',a:false,e:'Sai. Quần xã có độ đa dạng càng cao thì cấu trúc càng ổn định (nhiều mối quan hệ điều tiết lẫn nhau).'},
+  {t:'d. Độ đa dạng của quần xã càng cao thì lưới thức ăn của quần xã càng phức tạp.',a:true,e:'Đúng. Nhiều loài hơn → nhiều mối quan hệ dinh dưỡng hơn → lưới thức ăn phức tạp hơn.'},
+]},
+{b:'23',q:'Khi nói về sự phân tầng trong quần xã, các phát biểu sau đây đúng hay sai?',stmts:[
+  {t:'a. Sự phân tầng làm tăng khả năng sử dụng nguồn sống và làm tăng mức độ cạnh tranh giữa các loài trong quần xã.',a:false,e:'Sai. Phân tầng làm tăng khả năng sử dụng nguồn sống nhưng GIẢM mức độ cạnh tranh (các loài sử dụng các tầng khác nhau).'},
+  {t:'b. Trong HST rừng mưa nhiệt đới, sự phân tầng của thực vật kéo theo sự phân tầng của động vật.',a:true,e:'Đúng. Thực vật phân tầng tạo ra các ổ sinh thái khác nhau → động vật phân tầng theo.'},
+  {t:'c. Nguyên nhân của sự phân tầng là do sự phân bố không đồng đều của các nhân tố ngoại cảnh.',a:true,e:'Đúng. Ánh sáng, nhiệt độ, độ ẩm phân bố không đồng đều theo chiều thẳng đứng → phân tầng.'},
+  {t:'d. Trong các HST dưới nước, sự phân bố không đồng đều của ánh sáng kéo theo phân bố không đồng đều của sinh vật sản xuất.',a:true,e:'Đúng. Ánh sáng giảm theo độ sâu → sinh vật quang hợp tập trung ở tầng mặt.'},
+]},
+{b:'23',q:'Mỗi nhận định sau đây đúng hay sai về các hình thức quan hệ đối địch trong quần xã?',stmts:[
+  {t:'a. Trong quan hệ ký sinh, sự sống của loài ký sinh phụ thuộc vào loài bị hại.',a:true,e:'Đúng. Vật ký sinh cần vật chủ để lấy dinh dưỡng → sự sống của ký sinh phụ thuộc vào vật chủ (loài bị hại).'},
+  {t:'b. Trong quan hệ vật ăn thịt - con mồi, số lượng loài ăn thịt luôn nhiều hơn con mồi.',a:false,e:'Sai. Số lượng loài ăn thịt ít hơn con mồi (kim tự tháp số lượng).'},
+  {t:'c. Trong quan hệ ký sinh, số lượng loài ký sinh luôn ít hơn loài bị hại.',a:false,e:'Sai. Số lượng vật ký sinh NHIỀU HƠN vật chủ (nhiều cá thể ký sinh trên một vật chủ).'},
+  {t:'d. Hai loài cạnh tranh sẽ kiềm hãm sự phát triển của nhau.',a:true,e:'Đúng. Trong quan hệ cạnh tranh, cả hai loài đều bị ảnh hưởng bất lợi, kiềm hãm sự phát triển của nhau.'},
+]},
+{b:'23',q:'"Loài tôm vệ sinh" leo vào miệng lươn để ăn ký sinh trùng trong miệng lươn. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Đây là mối quan hệ hai bên cùng có lợi.',a:true,e:'Đúng. Tôm có thức ăn (+), lươn được làm sạch ký sinh trùng (+) → cả hai cùng có lợi.'},
+  {t:'b. Quan hệ vi khuẩn và tảo đơn bào thành địa y cũng tương tự như quan hệ tôm vệ sinh và lươn.',a:false,e:'Sai. Địa y là quan hệ CỘNG SINH (bắt buộc, không thể tách rời). Tôm vệ sinh – lươn là quan hệ HỢP TÁC (có thể tồn tại độc lập).'},
+  {t:'c. Đây là mối quan hệ hỗ trợ giữa 2 loài khác nhau trong quần xã.',a:true,e:'Đúng. Quan hệ hợp tác là một trong các quan hệ hỗ trợ giữa 2 loài khác nhau.'},
+  {t:'d. Đây là quan hệ hội sinh.',a:false,e:'Sai. Hội sinh chỉ một loài có lợi, loài kia không lợi không hại. Ở đây cả hai đều có lợi = hợp tác.'},
+]},
+{b:'23',q:'"Thủy triều đỏ" – tảo nở hoa bùng phát gây hại cho nghêu, trai, sò, vẹm, hầu. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Hiện tượng "thủy triều đỏ" là ví dụ của quan hệ ký sinh.',a:false,e:'Sai. Đây là quan hệ ức chế cảm nhiễm (một loài tiết ra chất độc gây hại loài khác), không phải ký sinh.'},
+  {t:'b. Sự tồn tại và sinh trưởng của sinh vật này gây hại đến sự tồn tại và sinh trưởng của sinh vật khác.',a:true,e:'Đúng. Tảo nở hoa tiết độc tố gây hại cho các loài thân mềm.'},
+  {t:'c. Mối quan hệ này cho thấy một loài có lợi và nhiều loài bị hại.',a:false,e:'Sai. Tảo không có lợi từ việc gây hại cho các loài khác. Đây chỉ là hiệu ứng phụ.'},
+  {t:'d. Đây là quan hệ khống chế sinh học.',a:false,e:'Sai. Khống chế sinh học là kẻ thù thiên nhiên kiểm soát số lượng loài. Đây là ức chế cảm nhiễm.'},
+]},
+{b:'23',q:'Kiến đỏ đuổi kiến hôi, kiến hôi đưa rệp lên chồi non để rệp hút nhựa và thải đường cho kiến hôi. Kiến đỏ tiêu diệt sâu và rệp. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Quan hệ giữa rệp cây và cây có múi là cạnh tranh khác loài.',a:false,e:'Sai. Rệp hút nhựa cây = quan hệ KÝ SINH (rệp có lợi, cây bị hại).'},
+  {t:'b. Quan hệ giữa rệp cây và kiến hôi là hội sinh.',a:false,e:'Sai. Rệp và kiến hôi cùng có lợi (rệp được đưa lên chồi non, kiến hôi lấy đường từ rệp) = quan hệ CỘNG SINH hoặc HỢP TÁC.'},
+  {t:'c. Sinh vật ăn thịt đầu bảng trong ví dụ trên là kiến đỏ nếu ta xây dựng một lưới thức ăn.',a:true,e:'Đúng. Kiến đỏ ăn cả sâu và rệp mà không bị loài nào ăn → là sinh vật ăn thịt đầu bảng.'},
+  {t:'d. Nếu xây dựng một lưới thức ăn thì sẽ có 3 loài là thức ăn của kiến đỏ.',a:false,e:'Sai. Kiến đỏ chỉ ăn sâu và rệp cây = 2 loài là thức ăn của kiến đỏ.'},
+]},
+{b:'25',q:'Hình mô tả các thành phần trong hệ sinh thái (A=vô sinh, B=hữu sinh, 1→5=chuỗi thức ăn). Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Nhóm (A) là các nhân tố vô sinh.',a:true,e:'Đúng. Nhóm A là các nhân tố môi trường vật lý và hóa học (ánh sáng, nước, chất khoáng...) = nhân tố vô sinh.'},
+  {t:'b. Nhóm (B) là các nhân tố hữu sinh.',a:true,e:'Đúng. Nhóm B gồm sinh vật sản xuất, tiêu thụ và phân giải = nhân tố hữu sinh.'},
+  {t:'c. Dòng năng lượng được chuyển từ A→1→2→3→4→5 và được trả lại cho môi trường dưới dạng nhiệt.',a:true,e:'Đúng. Năng lượng đi một chiều từ sinh vật sản xuất qua các bậc tiêu thụ và cuối cùng phát tán dưới dạng nhiệt.'},
+  {t:'d. Dòng vật chất được chuyển từ A→1→2→3→4→5 trả lại cho môi trường chủ yếu nhờ hoạt động của nhóm sinh vật tiêu thụ.',a:false,e:'Sai. Dòng vật chất được trả lại môi trường chủ yếu nhờ hoạt động của nhóm SINH VẬT PHÂN GIẢI (vi sinh vật), không phải sinh vật tiêu thụ.'},
+]},
+{b:'25',q:'Khi xét chuỗi thức ăn ở hệ sinh thái nước mặn. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Đây là loại chuỗi thức ăn bắt đầu bằng mùn bã hữu cơ.',a:false,e:'Sai. Chuỗi thức ăn phổ biến ở nước mặn bắt đầu từ sinh vật sản xuất (tảo, thực vật thủy sinh).'},
+  {t:'b. Sinh vật tiêu thụ có 5 bậc.',a:false,e:'Sai. Thông thường chuỗi thức ăn hệ sinh thái nước mặn có 3-4 bậc tiêu thụ.'},
+  {t:'c. Thuộc loại chuỗi thức ăn phổ biến trong hệ sinh thái dưới nước.',a:true,e:'Đúng. Chuỗi thức ăn bắt đầu từ sinh vật sản xuất là phổ biến nhất trong cả hệ sinh thái dưới nước và trên cạn.'},
+  {t:'d. Tổng năng lượng bậc dinh dưỡng 2,3,4 và 5 sẽ lớn hơn tổng năng lượng bậc dinh dưỡng thứ 1.',a:false,e:'Sai. Theo tháp năng lượng, năng lượng giảm dần qua các bậc. Tổng các bậc cao hơn luôn nhỏ hơn bậc 1.'},
+]},
+{b:'25',q:'Diễn thế nguyên sinh tại đất ngập mặn miền Bắc. Mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Sự bổ sung loài đước (Rhizophora), vẹt (Bruguiera) là để hình thành quần xã khởi đầu.',a:false,e:'Sai. Loài tiên phong (trang, bần) hình thành quần xã khởi đầu. Đước, vẹt được bổ sung sau khi nền đất được chuẩn bị = giai đoạn tiếp theo.'},
+  {t:'b. Loài trang (Kandelia) hoặc bần (Sonneratia) được xem là loài tiên phong tham gia quần xã đỉnh cực.',a:false,e:'Sai. Trang, bần là loài TIÊN PHONG (đầu tiên), không phải quần xã đỉnh cực.'},
+  {t:'c. Quá trình là quá trình diễn thế nguyên sinh trên cạn.',a:false,e:'Sai. Đây là diễn thế nguyên sinh ở vùng đất ngập nước/biển (mangrove), không phải trên cạn.'},
+  {t:'d. Nói lên vai trò con người giúp rút ngắn thời gian hình thành quần xã đỉnh cực trong tái sinh rừng.',a:true,e:'Đúng. Việc trồng cây tiên phong rồi bổ sung các loài tiếp theo giúp rút ngắn quá trình diễn thế tự nhiên.'},
+]},
+{b:'25',q:'Khi nói về diễn thế nguyên sinh, mỗi phát biểu đúng hay sai?',stmts:[
+  {t:'a. Bắt đầu từ một môi trường chưa có sinh vật.',a:true,e:'Đúng. Diễn thế nguyên sinh bắt đầu từ môi trường trống (chưa từng có sinh vật hoặc sinh vật đã bị tiêu diệt hoàn toàn).'},
+  {t:'b. Được biến đổi tuần tự qua các quần xã trung gian.',a:true,e:'Đúng. Diễn thế đi qua nhiều quần xã trung gian trước khi đạt quần xã đỉnh cực.'},
+  {t:'c. Quá trình diễn thế gắn liền với sự phá hại môi trường.',a:false,e:'Sai. Diễn thế gắn liền với sự CẢI THIỆN môi trường (đất hình thành, độ ẩm tăng...), không phải phá hại.'},
+  {t:'d. Diễn thế nguyên sinh là tiền đề cho diễn thế thứ sinh.',a:true,e:'Đúng. Diễn thế nguyên sinh tạo ra quần xã đỉnh cực; khi quần xã này bị phá hủy → diễn thế thứ sinh xảy ra.'},
+]},
+{b:'28',q:'Khi nói về nguyên nhân chủ yếu dẫn đến thủng tầng ozon, mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Do phát thải các khí gây hại (CFC, halon...) trong sản xuất và sinh hoạt của con người.',a:true,e:'Đúng. Nguyên nhân chủ yếu: phát thải CFC, halon, N₂O... từ tủ lạnh, điều hòa, bình xịt... → phá hủy tầng ozon.'},
+  {t:'b. Do hoạt động phun trào của núi lửa, thiên tai.',a:false,e:'Sai. Núi lửa có góp phần nhỏ nhưng không phải nguyên nhân chủ yếu. Nguyên nhân chủ yếu là hoạt động con người.'},
+  {t:'c. Do tác động của các trận bão lớn, áp thấp nhiệt đới và hoạt động sản xuất.',a:false,e:'Sai. Bão, áp thấp nhiệt đới không phải nguyên nhân chủ yếu gây thủng tầng ozon.'},
+  {t:'d. Do sự suy giảm diện tích rừng, phát triển nông nghiệp xanh, khai thác than.',a:false,e:'Sai. Suy giảm diện tích rừng và khai thác than ảnh hưởng đến CO₂ (hiệu ứng nhà kính), không trực tiếp gây thủng tầng ozon.'},
+]},
+{b:'28',q:'Khi nói về nguyên tắc của sự phát triển bền vững ở Việt Nam, mỗi nhận định đúng hay sai?',stmts:[
+  {t:'a. Phát triển song hành với đảm bảo an ninh lương thực, năng lượng.',a:true,e:'Đúng. Phát triển bền vững phải đảm bảo đồng thời kinh tế, xã hội (an ninh lương thực, năng lượng) và môi trường.'},
+  {t:'b. Phát triển đảm bảo sự công bằng nhu cầu thế hệ hiện tại và tương lai.',a:true,e:'Đúng. Phát triển bền vững = đáp ứng nhu cầu hiện tại mà không ảnh hưởng đến khả năng đáp ứng nhu cầu của thế hệ tương lai.'},
+  {t:'c. Giảm phát sinh các chất khí thải vào môi trường (nước, đất).',a:false,e:'Sai về diễn đạt. Khí thải thải vào khí quyển, không phải nước và đất. Phát triển bền vững giảm tất cả loại chất thải ra môi trường.'},
+  {t:'d. Con người là trung tâm của sự phát triển bền vững.',a:true,e:'Đúng. Con người là trung tâm – mọi phát triển đều hướng đến hạnh phúc và phúc lợi của con người.'},
+]},
+{b:'28',q:'Mỗi phát biểu sau đây đúng hay sai về vấn đề môi trường?',stmts:[
+  {t:'a. Sự phát triển khoa học kỹ thuật là nguyên nhân ô nhiễm môi trường.',a:false,e:'Sai. KH-KT không phải nguyên nhân. Sự sử dụng KH-KT một cách không có trách nhiệm và vô tội vạ mới là nguyên nhân.'},
+  {t:'b. Phải bằng mọi cách sử dụng hợp lý tài nguyên, bảo vệ môi trường.',a:true,e:'Đúng. Sử dụng hợp lý tài nguyên và bảo vệ môi trường là nhiệm vụ cấp thiết.'},
+  {t:'c. Hiện nay môi trường sinh thái bị ô nhiễm và suy thoái nghiêm trọng.',a:true,e:'Đúng. Môi trường hiện nay bị ô nhiễm và suy thoái nghiêm trọng là thực tế không thể phủ nhận.'},
+  {t:'d. Giải quyết vấn đề môi trường cần cả chính trị, kinh tế và khoa học.',a:true,e:'Đúng. Vấn đề môi trường là vấn đề toàn cầu, đòi hỏi sự hợp tác và giải quyết đồng bộ về chính trị, kinh tế và khoa học.'},
+]},
+];
+
+// SHORT ANSWER questions
+const SA = [
+{b:'15',q:'Bảng tỷ lệ % amino acid sai khác trong chuỗi polypeptide alpha của Hemoglobin giữa các loài:\n• Cá mập – Cá chép: 59,4%\n• Cá mập – Kỳ nhông: 61,4%\n• Cá mập – Chó: 56,8%\n• Cá mập – Người: 53,2%\n• Cá chép – Chó: 47,9%\n• Cá chép – Người: 48,6%\n• Kỳ nhông – Chó: 46,1%\n• Kỳ nhông – Người: 44,0%\n• Chó – Người: 16,3%\n\nCó bao nhiêu nhận định sau đây là đúng?\na. Đây là bằng chứng sinh học phân tử\nb. Cá chép có quan hệ họ hàng xa nhất với người\nc. Dựa trên bằng chứng này xác định được mối quan hệ họ hàng giữa các loài\nd. Trật tự đúng về mối quan hệ họ hàng: Cá mập → Cá chép → Kỳ nhông → Chó → Người',a:'3 (a, c, d)',e:'Đúng: a (bằng chứng sinh học phân tử), c (xác định được mối quan hệ họ hàng), d (trật tự đúng theo % sai khác tăng dần từ Người). Sai: b (Cá mập có % sai khác cao nhất với Người 53,2% so với Cá chép 48,6%, Cá mập mới xa nhất).'},
+{b:'23',q:'Cho các nhận định:\nI. Loài chủ chốt là loài đóng vai trò quan trọng trong quần xã do số lượng cá thể nhiều, hoạt động mạnh\nII. Sản lượng sinh vật thứ cấp cao nhất con người nhận được nằm ở bậc dinh dưỡng sinh vật sản xuất\nIII. Sinh vật tự dưỡng có ảnh hưởng quan trọng nhất đến mọi chuỗi thức ăn\nIV. Phân bố theo mặt phẳng ngang: các loài tập trung ở nơi có điều kiện sống thuận lợi\n\nSố nhận định đúng là bao nhiêu?',a:'1 (chỉ IV đúng)',e:'I sai: đặc điểm này là của loài ưu thế, không phải loài chủ chốt. II sai: sản lượng thứ cấp cao nhất nằm ở bậc ăn sinh vật sản xuất (tiêu thụ bậc 1). III sai: có chuỗi thức ăn bắt đầu bằng mùn bã hữu cơ (không cần sinh vật tự dưỡng). IV đúng.'},
+{b:'23',q:'Trong các phát biểu sau, có bao nhiêu phát biểu KHÔNG ĐÚNG khi nói về thành phần loài trong quần xã?\nI. Quần xã ổn định thường có số lượng loài lớn và số lượng cá thể mỗi loài lớn\nII. Khi số lượng loài tăng thì số lượng cá thể ở mỗi loài tăng theo\nIII. Loài ưu thế là loài chỉ có ở một quần xã nào đó hoặc có số lượng cá thể nhiều hơn hẳn các loài khác\nIV. Loài đặc trưng là loài có số lượng cá thể nhiều, sinh khối lớn, quyết định chiều hướng phát triển quần xã',a:'4 (cả 4 đều sai)',e:'I sai: quần xã nhiều loài thì số cá thể mỗi loài ít. II sai: không có mối quan hệ tỉ lệ thuận như vậy. III sai: định nghĩa của loài ĐẶC TRƯNG (chỉ có ở một quần xã), không phải loài ưu thế. IV sai: định nghĩa của loài ƯU THẾ.'},
+{b:'23',q:'Cho các mối quan hệ sau trong quần xã:\n(I) Lúa và cỏ dại trong ruộng lúa\n(II) Cây phong lan sống trên thân cây gỗ\n(III) Cây tầm gửi sống trên thân cây khác\n(IV) Hổ sử dụng thỏ làm thức ăn\n(V) Trùng roi sống trong ruột mối\n(VI) Chim sáo bắt chấy rận trên lưng trâu bò\n\nCó bao nhiêu mối quan hệ có lợi cho CẢ 2 LOÀI?',a:'2 (V và VI)',e:'V: Trùng roi giúp mối tiêu hóa cellulose, mối cung cấp môi trường sống cho trùng roi = cộng sinh (+,+). VI: Chim sáo ăn chấy rận (có thức ăn), trâu bò được loại ký sinh (+,+) = hợp tác. Các quan hệ còn lại: I=cạnh tranh(-,-), II=hội sinh(+,0), III=ký sinh(+,-), IV=vật ăn thịt/con mồi(+,-).'},
+{b:'23',q:'Cho các mối quan hệ sinh thái:\n(1) Dương xỉ sống bám trên thân cây gỗ để lấy nước và ánh sáng, không gây hại cây gỗ\n(2) Cá trốn được kẻ thù nhờ hải quỳ và cá bảo vệ hải quỳ khỏi bị cá khác ăn xúc tu\n(3) Trùng roi trong bụng mối có enzim cellulase giúp mối phân giải cellulose thành đường\n(4) Cò và nhạn bể làm chung tổ\n(5) Giun, sán sống trong cơ quan tiêu hóa của lợn\n\nCó bao nhiêu mối quan hệ thuộc quan hệ CỘNG SINH?',a:'1 (ý 3)',e:'(1)=hội sinh, (2)=hợp tác, (3)=cộng sinh (cả hai bắt buộc, không thể tách rời – trùng roi không sống được nếu không có mối và ngược lại), (4)=hợp tác, (5)=ký sinh.'},
+{b:'23',q:'Có bao nhiêu mối quan hệ sinh thái sau đây không gây hại cho các loài tham gia?\n(1) Tảo nước ngọt nở hoa cùng sống với cá tôm\n(2) Cây tầm gửi sống trên thân cây gỗ lớn\n(3) Loài cá ép sống bám trên các loài cá lớn\n(4) Loài kiến sống trên cây kiến',a:'2 (ý 3 và 4)',e:'(1)=ức chế cảm nhiễm(0,-), (2)=ký sinh(+,-), (3)=hội sinh(+,0) – không gây hại, (4)=hội sinh/cộng sinh(+,+) – không gây hại. Đúng là 2 mối quan hệ (3) và (4).'},
+{b:'23',q:'Có bao nhiêu phát biểu đúng khi nói về mối quan hệ cạnh tranh giữa các loài trong quần xã sinh vật?\n(1) Các loài có cùng nguồn thức ăn, chỗ ở thường có quan hệ cạnh tranh\n(2) Trong quan hệ cạnh tranh các loài đều bị ảnh hưởng bất lợi, có loài yếu thế có loài thắng thế\n(3) Chỉ các cá thể khác loài mới cạnh tranh gay gắt, cùng loài ít hoặc không cạnh tranh nhau\n(4) Cạnh tranh là động lực thúc đẩy các loài tồn tại ổn định trong thiên nhiên',a:'3 (ý 1, 2, 4)',e:'(1)đúng, (2)đúng, (3)sai – các cá thể cùng loài cũng cạnh tranh với nhau (cạnh tranh cùng loài thường gay gắt hơn), (4)đúng.'},
+{b:'23',q:'Có bao nhiêu phát biểu đúng về quan hệ vật kí sinh-vật chủ và con mồi-vật ăn thịt?\n(1) Con mồi thường có kích thước lớn nhưng số lượng ít hơn vật ăn thịt\n(2) Vật ăn thịt thường có kích thước bé nhưng số lượng nhiều hơn con mồi\n(3) Vật kí sinh có kích thước nhỏ nhưng số lượng đông hơn vật chủ\n(4) Vật chủ có kích thước lớn nhưng số lượng ít hơn con mồi\n(5) Chỉ có hai mối quan hệ này là nhân tố điều chỉnh số lượng cá thể quần thể\n(6) Vật ăn thịt giết chết con mồi, vật kí sinh không giết chết vật chủ',a:'3 (ý 3, 4, 6)',e:'(1)sai: con mồi nhiều hơn vật ăn thịt. (2)sai: vật ăn thịt lớn hơn con mồi. (3)đúng: ký sinh nhỏ và nhiều. (4)đúng: vật chủ lớn và ít hơn số con mồi (vì một vật chủ có nhiều ký sinh). (5)sai: nhiều nhân tố khác cũng điều chỉnh. (6)đúng.'},
+{b:'23',q:'Có bao nhiêu hoạt động tác động TÍCH CỰC đến quần xã sinh vật?\n1. Phá rừng, chuyển đất rừng thành đất nông nghiệp\n2. Thay thế HST tự nhiên bằng HST nhân tạo có độ đa dạng thấp\n3. Khai thác quá mức tài nguyên sinh vật\n4. Sử dụng thiếu kiểm soát phân bón hóa học, thuốc trừ sâu\n5. Xây dựng các khu bảo tồn thiên nhiên, vườn quốc gia\n6. Kế hoạch khai thác và sử dụng hợp lý tài nguyên\n7. Bảo vệ rừng, khai thác hợp lý tài nguyên sinh vật\n8. Bảo vệ, phục hồi quần thể sinh vật có kích thước nhỏ hoặc suy thoái',a:'4 (ý 5, 6, 7, 8)',e:'Tiêu cực: 1,2,3,4. Tích cực: 5 (khu bảo tồn), 6 (kế hoạch khai thác hợp lý), 7 (bảo vệ và khai thác hợp lý), 8 (bảo vệ phục hồi quần thể). Tổng: 4 hoạt động tích cực.'},
+{b:'25',q:'Nghiên cứu quần thể động vật: ban đầu có 11.000 cá thể, tỉ lệ sinh 12%/năm, tỉ lệ tử vong 8%/năm, tỉ lệ xuất cư 2%/năm. Sau một năm, số lượng cá thể trong quần thể là bao nhiêu?',a:'11.220 cá thể',e:'Nt = No + B – D + I – E. No=11000, B=12%×11000=1320, D=8%×11000=880, I=0, E=2%×11000=220. Nt = 11000 + 1320 – 880 + 0 – 220 = 11220.'},
+{b:'25',q:'Năng lượng đồng hóa: SV tiêu thụ bậc 1: 1.100.000 Kcal; bậc 2: 165.000 Kcal; bậc 3: 13.200 Kcal; bậc 4: 924 Kcal. Hãy tính hiệu suất sinh thái giữa bậc dinh dưỡng cấp 4 với bậc dinh dưỡng cấp 3.',a:'7% (924/13200 × 100 ≈ 7%)',e:'Hiệu suất sinh thái = (Năng lượng bậc sau / Năng lượng bậc trước) × 100% = 924/13200 × 100 = 7%. (Lưu ý: bậc dinh dưỡng cấp 4 tương ứng với SV tiêu thụ bậc 3, cấp 5 tương ứng bậc 4).'},
+{b:'25',q:'Cho các sinh vật: lúa, chuột, châu chấu, rắn, diều hâu. Có thể thiết lập tối đa bao nhiêu chuỗi thức ăn có từ 3 bậc dinh dưỡng trở lên?',a:'4 chuỗi thức ăn',e:'1. Lúa→chuột→rắn→diều hâu. 2. Lúa→chuột→diều hâu. 3. Lúa→châu chấu→chuột→rắn→diều hâu. 4. Lúa→châu chấu→chuột→diều hâu.'},
+{b:'25',q:'Cho các tập hợp: Rừng nhiệt đới, quần xã, quần thể, hệ sinh thái, savan, sa mạc, thảo nguyên, các sinh vật trong một hồ nước ngọt, khu sinh học nước ngọt, khu sinh học nước mặn, rừng lá rộng ôn đới, rừng lá kim phương bắc, đồng rêu.\n1. Có bao nhiêu ví dụ thuộc khu sinh học?\n2. Có bao nhiêu ví dụ thuộc khu sinh học trên cạn?\n3. Có bao nhiêu ví dụ không đúng cho một khu sinh học?',a:'1. Khu sinh học: 9 (savan, sa mạc, thảo nguyên, khu sinh học nước ngọt, khu sinh học nước mặn, rừng nhiệt đới, rừng lá rộng ôn đới, rừng lá kim phương bắc, đồng rêu)\n2. Khu sinh học trên cạn: 7\n3. Không phải khu sinh học: 3 (quần xã, quần thể, hệ sinh thái)',e:'Khu sinh học (biome) là các vùng địa lý lớn có đặc trưng riêng về khí hậu và sinh vật. Quần xã, quần thể, hệ sinh thái là các khái niệm cấp độ tổ chức sống, không phải khu sinh học.'},
+{b:'25',q:'Tại sao cần phục hồi khu rừng bị khai thác quá mức và một số động vật có nguy cơ tuyệt chủng? Có bao nhiêu đề xuất phù hợp trong số sau:\n1. Ban hành chính sách trồng và bảo vệ rừng, bảo vệ đa dạng sinh học\n2. Giáo dục ý thức cho người dân về tầm quan trọng của rừng\n3. Giáo dục ý thức về ý nghĩa của bảo vệ đa dạng sinh học\n4. Mỗi người dân là tuyên truyền viên tích cực cho bảo tồn HST',a:'4 đề xuất (tất cả đều phù hợp)',e:'Cả 4 đề xuất đều phù hợp: 1. Chính sách là nền tảng pháp lý. 2,3. Giáo dục nâng cao nhận thức. 4. Truyền thông cộng đồng. Đây là cách tiếp cận toàn diện để phục hồi hệ sinh thái.'},
+];
+
+// ================================================================
+// LOGIC
+// ================================================================
+let pool=[], cur=0, answered=[], correct=0, wrong=0;
+let curBai='ALL', curType='ALL';
+
+function buildPool(){
+  let mc_f = curType==='MC'||curType==='ALL';
+  let tf_f = curType==='TF'||curType==='ALL';
+  let sa_f = curType==='SA'||curType==='ALL';
+  pool = [];
+  if(mc_f) MC.forEach(q=>{ if(curBai==='ALL'||q.b===curBai) pool.push({...q,type:'MC'}); });
+  if(tf_f) TF.forEach(q=>{ if(curBai==='ALL'||q.b===curBai) pool.push({...q,type:'TF'}); });
+  if(sa_f) SA.forEach(q=>{ if(curBai==='ALL'||q.b===curBai) pool.push({...q,type:'SA'}); });
+  cur=0; answered=new Array(pool.length).fill(null); correct=0; wrong=0;
+  document.getElementById('s-correct').textContent=0;
+  document.getElementById('s-wrong').textContent=0;
+  document.getElementById('s-total').textContent=pool.length;
+  document.getElementById('nav').style.display='flex';
+  document.getElementById('explain').style.display='none';
+  render();
+}
+
+function setBai(b){
+  curBai=b;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const sel = b==='ALL'?'ALL':b;
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()===(b==='ALL'?'Tất cả':'B'+b)) t.classList.add('active'); });
+  document.getElementById('subtitle').textContent = b==='ALL' ? 'Tất cả bài học' : `Bài ${b}`;
+  buildPool();
+}
+
+function setType(tp){
+  curType=tp;
+  document.querySelectorAll('.ttab').forEach(t=>t.className='ttab');
+  const map={'MC':'active-mc','TF':'active-tf','SA':'active-sa','ALL':'active-all'};
+  document.querySelectorAll('.ttab').forEach(t=>{
+    const labels={'MC':'Trắc nghiệm','TF':'Đúng / Sai','SA':'Trả lời ngắn','ALL':'Tất cả'};
+    if(t.textContent.trim()===labels[tp]) t.classList.add(map[tp]);
+  });
+  buildPool();
+}
+
+function render(){
+  if(!pool.length){ document.getElementById('qtext').textContent='Không có câu hỏi phù hợp. Thử chọn bài khác hoặc loại câu hỏi khác.'; document.getElementById('q-body').innerHTML=''; return; }
+  const q=pool[cur];
+  const pct=((cur+1)/pool.length*100).toFixed(1);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent=(cur+1)+' / '+pool.length;
+  const typeMap={'MC':'Trắc nghiệm','TF':'Đúng / Sai','SA':'Trả lời ngắn'};
+  const typeClass={'MC':'badge-mc','TF':'badge-tf','SA':'badge-sa'};
+  const bt=document.getElementById('b-type');
+  bt.textContent=typeMap[q.type]; bt.className='badge '+typeClass[q.type];
+  const bb=document.getElementById('b-bai');
+  bb.textContent='Bài '+q.b;
+  document.getElementById('b-num').textContent=(cur+1)+' / '+pool.length;
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btn-prev').style.display=cur>0?'':'none';
+  document.getElementById('btn-next').style.display=answered[cur]!==null?'':'none';
+  document.getElementById('btn-next').textContent=cur===pool.length-1?'Xem kết quả':'Tiếp →';
+  document.getElementById('nav-info').textContent='';
+
+  if(q.type==='MC') renderMC(q);
+  else if(q.type==='TF') renderTF(q);
+  else renderSA(q);
+}
+
+function renderMC(q){
+  const body=document.getElementById('q-body');
+  body.innerHTML='';
+  const div=document.createElement('div'); div.className='opts';
+  q.o.forEach((o,i)=>{
+    const btn=document.createElement('button'); btn.className='opt';
+    const k=document.createElement('span'); k.className='opt-key'; k.textContent=['A','B','C','D'][i];
+    const tx=document.createElement('span'); tx.textContent=o;
+    btn.appendChild(k); btn.appendChild(tx);
+    if(answered[cur]!==null){
+      btn.disabled=true;
+      if(i===q.a) btn.classList.add('correct');
+      else if(i===answered[cur]) btn.classList.add('wrong');
+    } else { btn.onclick=()=>answerMC(i); }
+    div.appendChild(btn);
+  });
+  body.appendChild(div);
+  if(answered[cur]!==null){ const ex=document.getElementById('explain'); ex.style.display='block'; ex.textContent='💡 '+q.e; }
+}
+
+function answerMC(i){
+  if(answered[cur]!==null) return;
+  answered[cur]=i;
+  if(i===pool[cur].a){ correct++; document.getElementById('s-correct').textContent=correct; document.getElementById('nav-info').textContent='✓ Đúng!'; }
+  else{ wrong++; document.getElementById('s-wrong').textContent=wrong; document.getElementById('nav-info').textContent='✗ Sai'; }
+  document.getElementById('btn-next').style.display='';
+  renderMC(pool[cur]);
+}
+
+function renderTF(q){
+  const body=document.getElementById('q-body');
+  body.innerHTML='';
+  const grid=document.createElement('div'); grid.className='tf-opts';
+  const stmts=q.stmts;
+  const userAnswers = answered[cur] || new Array(stmts.length).fill(null);
+  const revealed = answered[cur] && answered[cur].every(a=>a!==null);
+
+  stmts.forEach((s,i)=>{
+    const card=document.createElement('div'); card.className='tf-item';
+    const stmt=document.createElement('div'); stmt.className='tf-stmt';
+    stmt.innerHTML='<strong>'+s.t.charAt(0)+'.</strong>'+s.t.slice(1);
+    const btns=document.createElement('div'); btns.className='tf-btns';
+    const tBtn=document.createElement('button'); tBtn.className='tf-btn t-btn'; tBtn.textContent='Đúng';
+    const fBtn=document.createElement('button'); fBtn.className='tf-btn f-btn'; fBtn.textContent='Sai';
+
+    if(revealed){
+      tBtn.disabled=true; fBtn.disabled=true;
+      if(s.a){ tBtn.classList.add('reveal-t'); } else { fBtn.classList.add('reveal-f'); }
+      if(userAnswers[i]===true) tBtn.classList.add('selected-t');
+      else if(userAnswers[i]===false) fBtn.classList.add('selected-f');
+      // show result
+      const rrow=document.createElement('div'); rrow.className='tf-result-row';
+      const correct_ans=s.a;
+      const user_ans=userAnswers[i];
+      const isOk=user_ans===correct_ans;
+      rrow.innerHTML='<span class="tf-check '+(isOk?'ok':'no')+'">'+(isOk?'✓':'✗')+'</span><span class="tf-note">'+s.e+'</span>';
+      card.appendChild(stmt); card.appendChild(btns); card.appendChild(rrow);
+    } else {
+      if(userAnswers[i]===true) tBtn.classList.add('selected-t');
+      else if(userAnswers[i]===false) fBtn.classList.add('selected-f');
+      tBtn.onclick=()=>tfSelect(i,true);
+      fBtn.onclick=()=>tfSelect(i,false);
+      card.appendChild(stmt); card.appendChild(btns);
+    }
+    btns.appendChild(tBtn); btns.appendChild(fBtn);
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+
+  if(!revealed){
+    const allAnswered=userAnswers.every(a=>a!==null);
+    if(allAnswered && !answered[cur]){
+      // show confirm button
+      const cfm=document.createElement('button'); cfm.className='btn primary'; cfm.textContent='Kiểm tra đáp án';
+      cfm.style.cssText='width:100%;margin-top:8px';
+      cfm.onclick=()=>confirmTF();
+      body.appendChild(cfm);
+    }
+  }
+}
+
+let tfTemp=[];
+function tfSelect(i,val){
+  const q=pool[cur];
+  if(!tfTemp.length || tfTemp.length!==q.stmts.length) tfTemp=new Array(q.stmts.length).fill(null);
+  tfTemp[i]=val;
+  // re-render with updated selections
+  const body=document.getElementById('q-body');
+  body.innerHTML='';
+  const grid=document.createElement('div'); grid.className='tf-opts';
+  q.stmts.forEach((s,idx)=>{
+    const card=document.createElement('div'); card.className='tf-item';
+    const stmt=document.createElement('div'); stmt.className='tf-stmt';
+    stmt.innerHTML='<strong>'+s.t.charAt(0)+'.</strong>'+s.t.slice(1);
+    const btns=document.createElement('div'); btns.className='tf-btns';
+    const tBtn=document.createElement('button'); tBtn.className='tf-btn t-btn'; tBtn.textContent='Đúng';
+    const fBtn=document.createElement('button'); fBtn.className='tf-btn f-btn'; fBtn.textContent='Sai';
+    if(tfTemp[idx]===true) tBtn.classList.add('selected-t');
+    else if(tfTemp[idx]===false) fBtn.classList.add('selected-f');
+    tBtn.onclick=()=>tfSelect(idx,true);
+    fBtn.onclick=()=>tfSelect(idx,false);
+    btns.appendChild(tBtn); btns.appendChild(fBtn);
+    card.appendChild(stmt); card.appendChild(btns);
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+  const allAnswered=tfTemp.every(a=>a!==null);
+  if(allAnswered){
+    const cfm=document.createElement('button'); cfm.className='btn primary'; cfm.textContent='Kiểm tra đáp án';
+    cfm.style.cssText='width:100%;margin-top:8px';
+    cfm.onclick=()=>confirmTF();
+    body.appendChild(cfm);
+  }
+}
+
+function confirmTF(){
+  const q=pool[cur];
+  answered[cur]=[...tfTemp];
+  tfTemp=[];
+  let numCorrect=0;
+  q.stmts.forEach((s,i)=>{ if(answered[cur][i]===s.a) numCorrect++; });
+  if(numCorrect===q.stmts.length){ correct++; document.getElementById('s-correct').textContent=correct; document.getElementById('nav-info').textContent='✓ Đúng hết!'; }
+  else if(numCorrect===0){ wrong++; document.getElementById('s-wrong').textContent=wrong; document.getElementById('nav-info').textContent='✗ Chưa đúng'; }
+  else{ document.getElementById('nav-info').textContent=numCorrect+'/'+q.stmts.length+' đúng'; }
+  document.getElementById('btn-next').style.display='';
+  renderTF(q);
+}
+
+function renderSA(q){
+  const body=document.getElementById('q-body');
+  body.innerHTML='';
+  if(answered[cur]!==null){
+    const ans=document.createElement('div'); ans.className='sa-answer';
+    ans.innerHTML='<strong>Đáp án</strong>'+q.a+'<br><br><em style="font-size:12px">'+q.e+'</em>';
+    body.appendChild(ans);
+    document.getElementById('btn-next').style.display='';
+  } else {
+    const wrap=document.createElement('div'); wrap.className='sa-input-wrap';
+    const inp=document.createElement('textarea'); inp.className='sa-input'; inp.placeholder='Nhập câu trả lời của bạn...';
+    const sub=document.createElement('button'); sub.className='sa-submit'; sub.textContent='Xem đáp án';
+    sub.onclick=()=>answerSA();
+    wrap.appendChild(inp); wrap.appendChild(sub);
+    body.appendChild(wrap);
+    // also add skip-to-answer button
+    const show=document.createElement('button'); show.className='btn'; show.textContent='Hiện đáp án ngay';
+    show.style='width:100%;margin-top:6px;font-size:12px';
+    show.onclick=()=>answerSA();
+    body.appendChild(show);
+  }
+}
+
+function answerSA(){
+  answered[cur]=true;
+  document.getElementById('nav-info').textContent='Xem đáp án';
+  document.getElementById('btn-next').style.display='';
+  renderSA(pool[cur]);
+}
+
+function go(d){
+  if(d>0 && cur===pool.length-1){ showScore(); return; }
+  cur=Math.max(0,Math.min(pool.length-1,cur+d));
+  tfTemp=[];
+  render();
+}
+
+function skipQ(){
+  if(cur<pool.length-1){ cur++; tfTemp=[]; render(); }
+}
+
+function showScore(){
+  const pct=Math.round(correct/Math.max(1,pool.length)*100);
+  document.getElementById('qcard').innerHTML=`
+    <div style="text-align:center;padding:28px 16px">
+      <div class="score-circle">
+        <div style="font-size:26px;font-weight:700;color:var(--green)">${pct}%</div>
+        <div style="font-size:10px;color:var(--green)">điểm số</div>
+      </div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">${pct>=80?'🌿 Xuất sắc!':pct>=60?'📗 Khá tốt!':'📚 Ôn thêm nhé!'}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Bạn đã hoàn thành ${pool.length} câu hỏi</div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:22px">
+        <div style="padding:12px 18px;border-radius:10px;border:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--green)">${correct}</div><div style="font-size:11px;color:var(--muted)">Đúng</div></div>
+        <div style="padding:12px 18px;border-radius:10px;border:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--red)">${wrong}</div><div style="font-size:11px;color:var(--muted)">Sai</div></div>
+        <div style="padding:12px 18px;border-radius:10px;border:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--blue)">${pool.length-correct-wrong}</div><div style="font-size:11px;color:var(--muted)">Bỏ qua</div></div>
+      </div>
+      <button class="btn primary" onclick="location.reload()" style="margin-right:8px">Làm lại</button>
+    </div>`;
+  document.getElementById('nav').style.display='none';
+}
+
+// init
+setBai('ALL');
+setType('ALL');
+</script>
+</body>
+</html>
